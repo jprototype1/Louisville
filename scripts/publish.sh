@@ -14,6 +14,14 @@ export PATH="$HOME/.rokit/bin:$HOME/.cargo/bin:$PATH"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+# Prevent two publishes from racing (parallel workers). mkdir is atomic on macOS.
+LOCKDIR="/tmp/brookhaven-publish.lock"
+if ! mkdir "$LOCKDIR" 2>/dev/null; then
+	echo "⏳ Another publish is in progress — wait a few seconds and try again." >&2
+	exit 1
+fi
+trap 'rmdir "$LOCKDIR" 2>/dev/null' EXIT
+
 # Load the API key from .env (kept out of git).
 if [ -f .env ]; then
 	set -a
