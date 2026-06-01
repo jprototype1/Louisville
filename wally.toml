@@ -1,0 +1,19 @@
+[package]
+name = "gnijor/brookhaven"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+[dependencies]
+# Open-world "do anything" core. Installed into Packages/ (gitignored — wally.lock is committed).
+# Require from code as: require(ReplicatedStorage.Packages.<Name>)
+
+# --- Canonical packages (official authors) ---
+Promise = "evaera/promise@4.0.0"          # async/await for Luau
+Janitor = "howmanysmall/janitor@1.18.3"   # connection + instance cleanup
+Cmdr = "evaera/cmdr@1.12.0"               # in-game debug/admin console (teleport, spawn, time-of-day)
+ByteNet = "ffrostflame/bytenet@0.4.6"     # typed, buffer-based networking (scales past raw RemoteEvents)
+
+# --- Fork-only on wally (original authors never published) — review/swap if desired ---
+ProfileStore = "sekuriyo-lotus/profilestore@1.0.4"  # fork of loleris/ProfileStore — save player data across servers
+ZonePlus = "essentiallyblue/zoneplus@3.2.2"         # fork of 1ForeverHD/ZonePlus — region/zone detection
