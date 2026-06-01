@@ -506,38 +506,42 @@ function MainHouse.build(parent: Instance)
 		Enum.Material.Metal
 	)
 
-	block(
-		details,
-		"PoolBasin",
-		Vector3.new(28, 1, 38),
-		Vector3.new(-40, 0.55, 28),
-		Color3.fromRGB(42, 88, 109),
-		Enum.Material.Slate
-	)
-	local poolWater = block(
-		details,
-		"PoolWater",
-		Vector3.new(26, 0.45, 36),
-		Vector3.new(-40, 1.15, 28),
-		COLORS.pool,
-		Enum.Material.Glass
-	)
+	-- Pool standing vertically — portal style, can't swim in it 🌊
+	local poolBasin = newPart({
+		Name = "PoolBasin",
+		Size = Vector3.new(28, 1, 38),
+		Color = Color3.fromRGB(42, 88, 109),
+		Material = Enum.Material.Slate,
+		CFrame = CFrame.new(HOUSE_ORIGIN + Vector3.new(-40, 19, 28)) * CFrame.Angles(math.rad(90), 0, 0),
+	})
+	poolBasin.Parent = details
+
+	local poolWater = newPart({
+		Name = "PoolWater",
+		Size = Vector3.new(26, 0.45, 36),
+		Color = COLORS.pool,
+		Material = Enum.Material.Glass,
+		CFrame = CFrame.new(HOUSE_ORIGIN + Vector3.new(-40, 18.5, 27.7)) * CFrame.Angles(math.rad(90), 0, 0),
+	})
 	poolWater.Transparency = 0.28
 	poolWater.Reflectance = 0.08
-	local poolGlow = lightBlock(details, "PoolGlow", Vector3.new(23, 0.16, 33), Vector3.new(-40, 1.22, 28))
-	poolGlow.Color = COLORS.waterGlow
-	local poolLight = poolGlow:FindFirstChild("WarmGlow")
-	if poolLight and poolLight:IsA("PointLight") then
-		poolLight.Color = COLORS.waterGlow
-	end
-	block(
-		details,
-		"PoolSteps",
-		Vector3.new(8, 0.35, 7),
-		Vector3.new(-27, 1.4, 11.5),
-		COLORS.concrete,
-		Enum.Material.Concrete
-	)
+	poolWater.Parent = details
+
+	local poolGlow = newPart({
+		Name = "PoolGlow",
+		Size = Vector3.new(23, 0.16, 33),
+		Color = COLORS.waterGlow,
+		Material = Enum.Material.Neon,
+		Transparency = 0.08,
+		CFrame = CFrame.new(HOUSE_ORIGIN + Vector3.new(-40, 17.8, 27.5)) * CFrame.Angles(math.rad(90), 0, 0),
+	})
+	poolGlow.Parent = details
+	local poolGlowLight = Instance.new("PointLight")
+	poolGlowLight.Name = "WarmGlow"
+	poolGlowLight.Brightness = 0.9
+	poolGlowLight.Range = 16
+	poolGlowLight.Color = COLORS.waterGlow
+	poolGlowLight.Parent = poolGlow
 
 	block(
 		details,

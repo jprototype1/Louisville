@@ -20,8 +20,8 @@ local ALLOWED_USER_IDS: { [number]: boolean } = {
 	[3609872486] = true, -- ThatGirlMehtab
 }
 
-local POLL_EVERY = 5 -- seconds between status checks
-local MAX_POLLS = 60 -- give up after ~5 minutes
+local POLL_EVERY = 2 -- seconds between polls (fast enough to feel live)
+local MAX_POLLS = 150 -- give up after ~5 minutes
 
 local AiPrompt = {}
 
@@ -41,20 +41,39 @@ local function tell(player: Player, message: string)
 	event("BuildStatus"):FireClient(player, message)
 end
 
--- Poll the session until the agent's turn finishes, then reload everyone.
+local function log(player: Player, line: string)
+	event("BuildLog"):FireClient(player, line)
+end
+
+-- Poll the session: stream the agent's transcript lines as they appear, and reload
+-- everyone once the turn (including the auto-publish) actually finishes.
 local function watchAndReload(player: Player, sessionId: string)
 	local sawBusy = false
+	local cursor = 0
 	for _ = 1, MAX_POLLS do
 		task.wait(POLL_EVERY)
+
+		-- Stream any new transcript lines to the player's progress panel.
+		local newCursor, lines = AiBridge.progress(sessionId, cursor)
+		cursor = newCursor
+		for _, line in lines do
+			log(player, line)
+		end
+
 		local status = AiBridge.status(sessionId)
 		if status then
-			-- Verified fields: `promptRunning` (bool) + `queueDepth`, and `status`
-			-- transitions to "finished" when the agent's turn (incl. publish) is done.
+			-- Verified fields: `promptRunning` (bool) + `queueDepth`; `status` becomes
+			-- "finished" when the agent's turn (now incl. the auto-publish) is done.
 			local running = status.promptRunning == true or (tonumber(status.queueDepth) or 0) > 0
 			local finished = tostring(status.status or ""):lower() == "finished"
 			if running then
 				sawBusy = true
 			elseif sawBusy or finished then
+				-- Flush any last lines that landed with the final status.
+				local _, last = AiBridge.progress(sessionId, cursor)
+				for _, line in last do
+					log(player, line)
+				end
 				tell(player, "Done! Updating the game now… 🚀")
 				task.wait(2) -- small grace for the new version to start rolling out
 				Reload.reloadAll()
@@ -97,7 +116,8 @@ end
 
 function AiPrompt.start()
 	event("RequestBuild").OnServerEvent:Connect(onRequest)
-	event("BuildStatus") -- ensure it exists for the client
+	event("BuildStatus") -- headline status, ensure it exists for the client
+	event("BuildLog") -- streamed transcript lines
 end
 
 return AiPrompt
