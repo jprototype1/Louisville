@@ -13,21 +13,25 @@ terminal can't find `openacp`, it's at `~/.nvm/versions/node/<ver>/bin/openacp`.
 ## 1. Launch (the durable process)
 
 The builder's side needs **nothing** — they just message the Telegram group. The rig lives on the Mac.
-Run these (ideally in 3 panes); **keep the Mac plugged in**, sleep is disabled only while caffeinate runs.
+**Keep the Mac plugged in**; sleep is disabled only while caffeinate runs.
 
+### One command (cmux)
 ```bash
-# Pane 1 — keep the Mac awake (system sleep is short; this is essential)
-caffeinate -dimsu
+./scripts/launch-rig.sh
+```
+This opens a dedicated **cmux** workspace `brookhaven-rig` with three panes:
+**caffeinate** (keep awake) · **openacp** (daemon) · **`review-sessions.mjs --watch`** (live feed).
+Re-run it after a reboot. (Each run makes a fresh workspace; close old ones with
+`cmux close-workspace --workspace <id>`.)
 
-# Pane 2 — the OpenACP daemon (foreground = visible)
-cd ~/roblox/brookhaven && openacp
-
-# Pane 3 — live, interleaved feed of all sessions
-cd ~/roblox/brookhaven && node scripts/review-sessions.mjs --watch
+### Or by hand (any terminal multiplexer)
+```bash
+caffeinate -dimsu                                              # pane 1: keep the Mac awake
+cd ~/roblox/brookhaven && openacp                              # pane 2: the daemon (foreground)
+cd ~/roblox/brookhaven && node scripts/review-sessions.mjs --watch   # pane 3: live feed
 ```
 
-After a reboot, just re-run those three. (A LaunchAgent can auto-start the daemon untended, but
-foreground keeps it visible and simple.)
+(A LaunchAgent can auto-start the daemon untended, but foreground keeps it visible and simple.)
 
 ### The builder's loop
 In the Telegram group they send `/new claude`, then prompt in plain language. The agent edits the game,
