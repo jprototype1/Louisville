@@ -97,6 +97,7 @@ are symlinked into `~/.local/bin` so the agent's shell (and any shell) finds the
 | `scripts/worker-new.sh <name>` | Creates an isolated git-worktree lane for a parallel session. |
 | `scripts/worker-merge.sh <name>` | Merges a lane back into `nephew-playground` and cleans it up. |
 | `scripts/review-sessions.mjs` | Review session transcripts; `--watch` streams all sessions live, interleaved. |
+| `scripts/studio.sh` | Studio live-sync dev loop: regenerate the LSP sourcemap + start `rojo serve`. See [STUDIO.md](STUDIO.md). |
 | `scripts/launch-rig.sh` | Launches the whole rig in a 3-pane **cmux** workspace (caffeinate · openacp · live watch). |
 
 Editor: `.zed/` provides Luau LSP (autocomplete/type-check), format-on-save, and one-click tasks.

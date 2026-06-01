@@ -15,6 +15,7 @@ the rig on a Mac.
 ## Docs
 - **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — the game systems, the remote-build rig, system roles, data flow.
 - **[docs/OPERATING.md](docs/OPERATING.md)** — operator's guide: launch, monitor, publish, parallel lanes, cost, recovery, security, troubleshooting.
+- **[docs/STUDIO.md](docs/STUDIO.md)** — the in-Studio developer workflow (Rojo live-sync + the Studio MCP).
 - **[CLAUDE.md](CLAUDE.md)** — how the AI agent should behave (kid-friendly tone + the safe build/publish loop).
 
 ## Quick start (operator)
@@ -29,11 +30,11 @@ The builder just sends `/new claude` in the Telegram group and starts prompting.
 
 ## Quick start (developer, in Studio)
 ```bash
-rojo build -o brookhaven.rbxlx   # build a place file, open it in Studio
-rojo serve                       # live-sync src/ into Studio (connect via the Rojo plugin)
-./scripts/check.sh               # auto-format + lint + build
-./scripts/publish.sh             # commit + publish live (needs .env with ROBLOX_API_KEY)
+./scripts/studio.sh    # regenerate sourcemap + start Rojo live-sync (connect via the Rojo plugin)
+./scripts/check.sh     # auto-format + lint + build
+./scripts/publish.sh   # commit + publish live (needs .env with ROBLOX_API_KEY)
 ```
+Full Studio workflow (plugin, MCP, playtesting) in [docs/STUDIO.md](docs/STUDIO.md).
 
 ## Branches
 - `main` — production (what's intended to be live)
