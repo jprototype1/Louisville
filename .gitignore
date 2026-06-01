@@ -23,3 +23,6 @@ roblox.yml
 
 # macOS
 .DS_Store
+
+# OpenACP local workspace (SECRETS: bot token, api keys, private media)
+.openacp/
