@@ -58,6 +58,27 @@ openacp logs                  # raw daemon log
 
 ---
 
+## 2b. Driving sessions from the local CLI (no Telegram)
+
+The OpenACP **SSE adapter** + local **api-server** mean you can multiplex conversations straight from the
+terminal — handy for testing or driving the agent yourself.
+
+```bash
+node scripts/chat.mjs               # list sessions
+node scripts/chat.mjs new          # create a session and open an interactive chat
+node scripts/chat.mjs <id|partial> # chat with an existing session (replies stream inline)
+```
+In the chat REPL: type a prompt, replies stream in. Slash commands: `/bypass on|off`, `/model <name>`, `/exit`.
+
+Under the hood it's just the daemon's API — you can script it directly:
+```bash
+openacp api new claude                 # -> a session ID (defaults to Sonnet)
+openacp api send <id> "make the cars red"
+openacp api status                     # watch progress (or use review-sessions.mjs --watch)
+openacp api bypass <id> on             # skip permission prompts
+```
+The same sessions are visible in Telegram and the live `--watch` feed — it's all one multiplexed pool.
+
 ## 3. Publishing
 
 The agent normally publishes itself. To do it manually:
