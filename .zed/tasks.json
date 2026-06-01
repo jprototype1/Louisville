@@ -1,0 +1,27 @@
+[
+  {
+    "label": "Rojo: serve (live sync)",
+    "command": "rojo serve",
+    "use_new_terminal": true
+  },
+  {
+    "label": "Rojo: regenerate sourcemap",
+    "command": "rojo sourcemap default.project.json -o sourcemap.json && echo 'sourcemap updated'"
+  },
+  {
+    "label": "Rojo: build place",
+    "command": "rojo build default.project.json -o build.rbxlx && echo 'built build.rbxlx'"
+  },
+  {
+    "label": "Selene: lint src",
+    "command": "selene src/"
+  },
+  {
+    "label": "StyLua: format src",
+    "command": "stylua src/ && echo 'formatted'"
+  },
+  {
+    "label": "StyLua: check (CI-style)",
+    "command": "stylua --check src/"
+  }
+]

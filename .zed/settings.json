@@ -1,0 +1,41 @@
+{
+  "languages": {
+    "Luau": {
+      "hard_tabs": true,
+      "tab_size": 4,
+      "format_on_save": "on",
+      "formatter": {
+        "external": {
+          "command": "/Users/gnijor/.rokit/bin/stylua",
+          "arguments": ["--search-parent-directories", "--stdin-filepath", "{buffer_path}", "-"]
+        }
+      }
+    }
+  },
+  "lsp": {
+    "luau-lsp": {
+      "settings": {
+        "luau-lsp": {
+          "sourcemap": {
+            "enabled": true,
+            "autogenerate": true,
+            "rojoProjectFile": "default.project.json"
+          },
+          "types": {
+            "roblox": true
+          },
+          "completion": {
+            "imports": {
+              "enabled": true
+            }
+          },
+          "inlayHints": {
+            "parameterNames": "literals",
+            "variableTypes": true,
+            "functionReturnTypes": true
+          }
+        }
+      }
+    }
+  }
+}

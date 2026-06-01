@@ -1,8 +1,19 @@
-# Project place file
+# Built place / model files (generated from source via Rojo)
 /brookhaven.rbxlx
+/build.rbxlx
+*.rbxl
+*.rbxm
 
 # Roblox Studio lock files
 /*.rbxlx.lock
 /*.rbxl.lock
 
+# Generated tooling artifacts
 sourcemap.json
+roblox.yml
+
+# Wally packages (installed via `wally install`; commit wally.lock instead)
+/Packages/
+
+# macOS
+.DS_Store
