@@ -20,13 +20,10 @@ the rig on a Mac.
 
 ## Quick start (operator)
 ```bash
-# keep the Mac awake + run the daemon + watch sessions (3 panes)
-caffeinate -dimsu
-cd ~/roblox/brookhaven && openacp
-cd ~/roblox/brookhaven && node scripts/review-sessions.mjs --watch
+./scripts/launch-rig.sh   # opens a cmux workspace: caffeinate | openacp daemon | live session watch
 ```
-The builder just sends `/new claude` in the Telegram group and starts prompting. Full details in
-[docs/OPERATING.md](docs/OPERATING.md).
+That's the whole rig. The builder just sends `/new claude` in the Telegram group and starts prompting.
+Full details (monitoring, publishing, cost, recovery, security) in [docs/OPERATING.md](docs/OPERATING.md).
 
 ## Quick start (developer, in Studio)
 ```bash
