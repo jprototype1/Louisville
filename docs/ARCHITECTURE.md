@@ -96,7 +96,7 @@ are symlinked into `~/.local/bin` so the agent's shell (and any shell) finds the
 | `scripts/publish.sh` | Auto-commits + pushes to GitHub, then builds + publishes to the live game via Open Cloud. `--save` uploads without going live. Has a lock against concurrent publishes. |
 | `scripts/worker-new.sh <name>` | Creates an isolated git-worktree lane for a parallel session. |
 | `scripts/worker-merge.sh <name>` | Merges a lane back into `nephew-playground` and cleans it up. |
-| `scripts/chat.mjs` | Local CLI to drive/multiplex OpenACP conversations from the terminal (no Telegram needed). |
+| `scripts/chat` / `scripts/chat.mjs` | Friendly local CLI to drive/multiplex OpenACP conversations from the terminal (menu, pick-by-number, streaming, slash commands). |
 | `scripts/review-sessions.mjs` | Review session transcripts; `--watch` streams all sessions live, interleaved. |
 | `scripts/studio.sh` | Studio live-sync dev loop: regenerate the LSP sourcemap + start `rojo serve`. See [STUDIO.md](STUDIO.md). |
 | `scripts/launch-rig.sh` | Launches the whole rig in a 3-pane **cmux** workspace (caffeinate · openacp · live watch). |

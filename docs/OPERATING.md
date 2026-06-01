@@ -64,11 +64,14 @@ The OpenACP **SSE adapter** + local **api-server** mean you can multiplex conver
 terminal — handy for testing or driving the agent yourself.
 
 ```bash
-node scripts/chat.mjs               # list sessions
-node scripts/chat.mjs new          # create a session and open an interactive chat
-node scripts/chat.mjs <id|partial> # chat with an existing session (replies stream inline)
+./scripts/chat                  # pick a session from a numbered menu (or start new)
+./scripts/chat new              # start a fresh session and chat
+./scripts/chat ls               # list sessions and exit
+./scripts/chat <id|partial|#>   # open a session directly (id, prefix, or list number)
+./scripts/chat --help           # usage
 ```
-In the chat REPL: type a prompt, replies stream in. Slash commands: `/bypass on|off`, `/model <name>`, `/exit`.
+In a chat: type a prompt → the reply streams in (with a "thinking…" spinner). Slash commands:
+`/new`, `/switch`, `/status`, `/model <name>`, `/bypass on|off`, `/cancel`, `/clear`, `/help`, `/exit`.
 
 Under the hood it's just the daemon's API — you can script it directly:
 ```bash

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Friendly shortcut for the local OpenACP chat CLI.  Usage: ./scripts/chat [args]
+NODE_BIN="$(command -v node || ls "$HOME"/.nvm/versions/node/*/bin/node 2>/dev/null | tail -1)"
+[ -x "$NODE_BIN" ] || { echo "node not found" >&2; exit 1; }
+exec "$NODE_BIN" "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/chat.mjs" "$@"
