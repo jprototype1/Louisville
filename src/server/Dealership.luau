@@ -144,6 +144,29 @@ local function addDisplayCar(folder: Folder, spec: CarSpec, slot: number, total:
 	})
 	pedestal.Parent = folder
 
+	-- Showroom spotlight above each car. The place has black ambient, so without
+	-- this the cars sit in pure shadow under the roof.
+	local lamp = newPart("Lamp", {
+		Size = Vector3.new(3, 0.4, 3),
+		Material = Enum.Material.Neon,
+		Color = Color3.fromRGB(255, 250, 235),
+		Position = Vector3.new(x, 15.5, z),
+	})
+	lamp.Parent = folder
+	local spot = Instance.new("SpotLight")
+	spot.Face = Enum.NormalId.Bottom
+	spot.Angle = 100
+	spot.Brightness = 6
+	spot.Range = 28
+	spot.Color = Color3.fromRGB(255, 250, 235)
+	spot.Parent = lamp
+	-- A little omnidirectional fill so the sides aren't black.
+	local fill = Instance.new("PointLight")
+	fill.Brightness = 2.5
+	fill.Range = 24
+	fill.Color = Color3.fromRGB(255, 250, 235)
+	fill.Parent = lamp
+
 	-- A static display copy, frozen so it can't roll off. Face it toward the front.
 	local display = CarFactory.create(spec, CFrame.lookAt(base, base + Vector3.new(0, 0, 1)))
 	CarFactory.freeze(display)
