@@ -31,5 +31,13 @@
   {
     "label": "Roblox: upload version (no go-live)",
     "command": "./scripts/publish.sh --save"
+  },
+  {
+    "label": "Sessions: list (who did what)",
+    "command": "node scripts/review-sessions.mjs"
+  },
+  {
+    "label": "Sessions: read latest transcript",
+    "command": "node scripts/review-sessions.mjs latest"
   }
 ]
