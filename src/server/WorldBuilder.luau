@@ -108,7 +108,7 @@ function WorldBuilder.build(parent: Instance)
 	for _ = 1, 6 do
 		makeHill(scatterPoint()).Parent = world
 	end
-	for _ = 1, 70 do
+	for _ = 1, 140 do
 		makeTree(scatterPoint()).Parent = world
 	end
 	for _ = 1, 40 do
