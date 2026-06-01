@@ -10,13 +10,13 @@
 --   * Best-effort: which car is on which pad is saved per player and restored on
 --     rejoin (guarded so it's harmless if DataStores are unavailable).
 
+local DataStoreService = game:GetService("DataStoreService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local DataStoreService = game:GetService("DataStoreService")
 
 local CarFactory = require(script.Parent.CarFactory)
-local CarRegistry = require(script.Parent.CarRegistry)
 local CarModels = require(game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("CarModels"))
+local CarRegistry = require(script.Parent.CarRegistry)
 type CarSpec = CarModels.CarSpec
 type Entry = CarRegistry.Entry
 

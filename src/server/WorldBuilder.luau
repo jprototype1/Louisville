@@ -48,11 +48,7 @@ local function makeTree(position: Vector3): Model
 			Material = Enum.Material.Grass,
 			Color = leafColor,
 			Size = Vector3.new(size, size, size),
-			Position = position + Vector3.new(
-				rng:NextNumber(-2, 2),
-				height + i * 2.5,
-				rng:NextNumber(-2, 2)
-			),
+			Position = position + Vector3.new(rng:NextNumber(-2, 2), height + i * 2.5, rng:NextNumber(-2, 2)),
 		})
 		leaves.Parent = tree
 	end

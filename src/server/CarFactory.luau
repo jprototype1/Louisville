@@ -55,7 +55,14 @@ local function attachment(parent: BasePart, cframe: CFrame): Attachment
 end
 
 -- Build one wheel + its constraints. Rear wheels are powered; front wheels steer.
-local function buildWheel(model: Model, chassis: Part, spec: CarSpec, lateral: number, longitudinal: number, isFront: boolean)
+local function buildWheel(
+	model: Model,
+	chassis: Part,
+	spec: CarSpec,
+	lateral: number,
+	longitudinal: number,
+	isFront: boolean
+)
 	local radius = spec.wheelDiameter
 	-- Local mount point on the chassis: out to the side, at the chassis bottom.
 	local offset = Vector3.new(lateral, -spec.bodySize.Y / 2, longitudinal)

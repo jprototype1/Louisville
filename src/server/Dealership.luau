@@ -6,8 +6,8 @@
 local Players = game:GetService("Players")
 
 local CarFactory = require(script.Parent.CarFactory)
-local CarRegistry = require(script.Parent.CarRegistry)
 local CarModels = require(game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("CarModels"))
+local CarRegistry = require(script.Parent.CarRegistry)
 type CarSpec = CarModels.CarSpec
 
 local Dealership = {}
@@ -62,7 +62,7 @@ local function giveCar(player: Player, spec: CarSpec)
 	end
 end
 
-local function buildShowroom(parent: Instance): Folder
+local function buildShowroom(): Folder
 	local folder = Instance.new("Folder")
 	folder.Name = "Dealership"
 
@@ -217,7 +217,7 @@ function Dealership.build(parent: Instance)
 		existing:Destroy()
 	end
 
-	local folder = buildShowroom(parent)
+	local folder = buildShowroom()
 	for slot, spec in CarModels do
 		addDisplayCar(folder, spec, slot, #CarModels)
 	end
