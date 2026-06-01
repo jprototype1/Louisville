@@ -81,7 +81,7 @@ Identifiers (Open Cloud target): **Universe `10253814602`**, **Place `9674255642
 | **Builder** | the kid (Telegram) | Sends prompts, tests on iPad. No setup on their end. |
 | **Agent** | Claude via OpenACP | Edits code, runs `check.sh` (auto-format + lint + build), publishes, talks per `CLAUDE.md`. |
 | **OpenACP daemon** | local process | Bridges Telegram ⇄ agent; manages sessions, permissions, media. |
-| **Repo / branches** | git | `main` = production; `nephew-playground` = the builder's branch; `play/<name>` = isolated parallel worktrees (see worker scripts). |
+| **Repo / branches** | git | The agent's working dir (`~/roblox/brookhaven`, where the OpenACP daemon lives) is checked out to **`nephew-playground`** — sessions can only edit that branch, never `main`. The operator manages **`main`** in a separate worktree (`~/roblox/brookhaven-main`). `play/<name>` worktrees add per-session isolation for parallel builders (`worker-new.sh`). |
 
 ---
 

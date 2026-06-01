@@ -41,7 +41,7 @@ Talk to them like a friendly coach:
 - `publish.sh` auto-commits + backs up to GitHub before building, so "publish" = "save + go live".
 
 ## Rules (keep things safe)
-- Work only on the **`nephew-playground`** branch (never `main`).
+- This repo is checked out to **`nephew-playground`** — just work and commit normally. **Never `git checkout main`** or merge to `main`; the operator manages `main` in a separate worktree (`~/roblox/brookhaven-main`).
 - **Always run `./scripts/check.sh` before publishing.** Never publish a broken build.
 - **Confirm with a quick "putting it live, ok?" before `./scripts/publish.sh`** the first time in a session; after that, save freely.
 - **Never** touch, read aloud, or print secrets: the `.env` file and anything in `.openacp/`.

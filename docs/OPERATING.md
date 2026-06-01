@@ -96,8 +96,17 @@ publish is recoverable. A lock prevents two publishes from racing.
 
 ## 4. Parallel builders (worktree lanes)
 
-Multiple sessions editing the **same file** in the shared tree will clobber each other. For true
-parallel work, give each its own lane:
+**Branch layout (important).** The agent's working dir `~/roblox/brookhaven` (where the daemon lives)
+is checked out to **`nephew-playground`**, so every bare `/new claude` session edits that branch and
+*never touches `main`*. You manage `main` from a separate worktree:
+```bash
+# promote the builder's work to production:
+git -C ~/roblox/brookhaven-main merge nephew-playground && git -C ~/roblox/brookhaven-main push
+git -C ~/roblox/brookhaven-main pull   # (publish.sh from there ships the main/production build)
+```
+
+Multiple sessions editing the **same file** in the shared `nephew-playground` tree will still clobber
+each other. For true parallel work, give each its own lane:
 
 ```bash
 ./scripts/worker-new.sh pool        # makes ../brookhaven-pool on branch play/pool, prints a /new command
