@@ -34,7 +34,9 @@ const OPENACP = (() => {
 	try { const p = execSync("command -v openacp", { shell: "/bin/bash", encoding: "utf8" }).trim(); if (p) return p; } catch {}
 	console.error(`${C.red}openacp not found — is it installed? (npm i -g @openacp/cli)${C.r}`); process.exit(1);
 })();
-const api = (...a) => execFileSync(OPENACP, ["api", ...a], { encoding: "utf8" });
+// stdio stdin = "ignore" so these subprocess calls never touch the terminal's
+// stdin (otherwise the interactive menu/prompt can't read your keystrokes).
+const api = (...a) => execFileSync(OPENACP, ["api", ...a], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
 const apiQuiet = (...a) => { try { return api(...a); } catch (e) { return String(e.stderr || e.message || e); } };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -54,8 +56,16 @@ function promptActive(id) { try { return /Prompt active\s*:\s*true/i.test(api("s
 function modelOf(id) { const m = apiQuiet("session-config", id).match(/current:\s*(\S+)/); return m ? m[1] : "?"; }
 function createSession() { const id = (apiQuiet("new", "claude").match(/ID\s*:\s*([A-Za-z0-9_-]+)/) || [])[1]; return id; }
 
+// Menu/list view: hide dead (cancelled) sessions, active first. Numbers here
+// match resolveTarget(number) so picking "2" always means the 2nd row shown.
+const RANK = { active: 0, initializing: 1, finished: 2 };
+function visible() {
+	return sessions()
+		.filter((s) => s.status !== "cancelled")
+		.sort((a, b) => (RANK[a.status] ?? 3) - (RANK[b.status] ?? 3));
+}
 function resolveTarget(arg) {
-	if (/^\d+$/.test(arg)) { const rows = sessions(); return rows[+arg - 1]?.id; }
+	if (/^\d+$/.test(arg)) { return visible()[+arg - 1]?.id; }
 	if (fs.existsSync(path.join(HIST, `${arg}.json`))) return arg;
 	return fs.readdirSync(HIST).map((f) => f.replace(/\.json$/, "")).find((x) => x.startsWith(arg)) || arg;
 }
@@ -149,7 +159,7 @@ function ask(q) {
 	});
 }
 async function menu() {
-	const rows = sessions();
+	const rows = visible();
 	printList(rows);
 	const a = await ask(`\n${C.b}Pick #${C.r}, ${C.cyn}n${C.r}ew, or ${C.cyn}q${C.r}uit: `);
 	if (a === "" || a === "q") return null;
@@ -173,7 +183,7 @@ ${HELP_IN}`);
 
 let current;
 if (cmd === "--help" || cmd === "-h") { printHelp(); process.exit(0); }
-else if (cmd === "ls" || cmd === "list") { printList(sessions()); process.exit(0); }
+else if (cmd === "ls" || cmd === "list") { printList(rest[0] === "all" ? sessions() : visible()); process.exit(0); }
 else if (cmd === "new") current = createSession();
 else if (cmd) current = resolveTarget(cmd);
 else current = await menu();
