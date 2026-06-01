@@ -23,44 +23,57 @@ local CONFIG = {
 	-- Public OpenACP tunnel base (NOT secret — just the hostname). From `openacp remote`.
 	baseUrl = "https://tunnel-ed6ee4e1.openacp.ai",
 	-- Which agent + workspace OpenACP should spin the session up in.
+	apiBase = "/api/v1/sessions",
 	agent = "claude",
 	workspace = "/Users/gnijor/roblox/brookhaven",
-	-- Roblox Secret key holding the access token (preferred — keeps it out of code).
+	-- Roblox Secret key holding the Bearer token (preferred — keeps it out of code).
 	secretKey = "openacp_token",
 	-- Studio/local-only fallback. KEEP BLANK in commits — anything here ships live.
 	localToken = "",
 }
 
+-- API contract verified live against the OpenACP daemon (2026-06-01):
+--   * routes live under /api/v1/sessions
+--   * auth is an `Authorization: Bearer <token>` header (the ?code= in `openacp
+--     remote` is a one-time browser code, NOT a durable token — see OPEN ITEM below)
+--   * responses are wrapped: { success = bool, data = {...} }
+--
+-- ⚠️ OPEN ITEM: `openacp remote` tokens currently expire in ~30 min, so they aren't
+-- suitable to embed. A durable Bearer token (or a code→JWT exchange step) still needs
+-- to be sorted before this works unattended.
+
 local AiBridge = {}
 
--- Build the authed URL for a path. Uses a Roblox Secret when available (so the
--- token value never appears in readable code), else the local fallback.
-local function authedUrl(path: string): (string | Secret)?
-	local base = CONFIG.baseUrl .. path .. "?code="
+-- The Authorization header value ("Bearer <token>"). Uses a Roblox Secret when set
+-- (so the token never appears in readable code), else the local fallback.
+local function authHeader(): (string | Secret)?
 	local ok, secret = pcall(function()
 		return HttpService:GetSecret(CONFIG.secretKey)
 	end)
 	if ok and secret then
-		-- Secret:AddPrefix keeps the token opaque; result is usable as a request URL.
-		return secret:AddPrefix(base)
+		return secret:AddPrefix("Bearer ")
 	end
 	if CONFIG.localToken ~= "" then
-		return base .. CONFIG.localToken
+		return "Bearer " .. CONFIG.localToken
 	end
 	warn("[AiBridge] No OpenACP token — set the `" .. CONFIG.secretKey .. "` Secret (see AiBridge.luau setup).")
 	return nil
 end
 
+-- Returns the unwrapped `data` payload, or nil on any failure.
 local function request(method: string, path: string, body: { [string]: any }?): { [string]: any }?
-	local url = authedUrl(path)
-	if not url then
+	local auth = authHeader()
+	if not auth then
 		return nil
 	end
 	local ok, res = pcall(function()
 		return HttpService:RequestAsync({
-			Url = url,
+			Url = CONFIG.baseUrl .. path,
 			Method = method,
-			Headers = { ["Content-Type"] = "application/json" },
+			Headers = {
+				["Content-Type"] = "application/json",
+				["Authorization"] = auth,
+			},
 			Body = body and HttpService:JSONEncode(body) or nil,
 		})
 	end)
@@ -77,24 +90,29 @@ local function request(method: string, path: string, body: { [string]: any }?): 
 	pcall(function()
 		decoded = HttpService:JSONDecode(response.Body)
 	end)
-	return decoded
+	if type(decoded) ~= "table" or decoded.success == false then
+		return nil
+	end
+	return decoded.data or decoded
 end
 
 -- Create a session and submit the build request. Returns the session id (to poll).
 function AiBridge.send(prompt: string): string?
-	local created = request("POST", "/api/sessions", { agent = CONFIG.agent, workspace = CONFIG.workspace })
-	local sessionId = created and (created.id or created.sessionId)
+	local created = request("POST", CONFIG.apiBase, { agent = CONFIG.agent, workspace = CONFIG.workspace })
+	local sessionId = created and created.sessionId
 	if not sessionId then
 		warn("[AiBridge] could not create session")
 		return nil
 	end
-	request("POST", "/api/sessions/" .. sessionId .. "/prompt", { prompt = prompt })
+	request("POST", CONFIG.apiBase .. "/" .. sessionId .. "/prompt", { prompt = prompt })
 	return sessionId
 end
 
--- Poll a session. Returns its raw status object (caller decides when it's "done").
+-- Poll a session. Returns its status fields (caller checks .promptRunning/.status).
+-- The single-session response nests the fields under `data.session`.
 function AiBridge.status(sessionId: string): { [string]: any }?
-	return request("GET", "/api/sessions/" .. sessionId, nil)
+	local data = request("GET", CONFIG.apiBase .. "/" .. sessionId, nil)
+	return data and (data.session or data)
 end
 
 return AiBridge

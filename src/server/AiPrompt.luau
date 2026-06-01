@@ -21,7 +21,6 @@ local ALLOWED_USER_IDS: { [number]: boolean } = {}
 
 local POLL_EVERY = 5 -- seconds between status checks
 local MAX_POLLS = 60 -- give up after ~5 minutes
-local BUSY = { running = true, working = true, active = true, busy = true, processing = true }
 
 local AiPrompt = {}
 
@@ -47,16 +46,20 @@ local function watchAndReload(player: Player, sessionId: string)
 	for _ = 1, MAX_POLLS do
 		task.wait(POLL_EVERY)
 		local status = AiBridge.status(sessionId)
-		local state = status and tostring(status.status or status.state or ""):lower()
-		if state and BUSY[state] then
-			sawBusy = true
-		elseif sawBusy then
-			-- Was working, now idle → the build (and publish) is done.
-			tell(player, "Done! Updating the game now… 🚀")
-			task.wait(2) -- small grace for the new version to start rolling out
-			Reload.reloadAll()
-			busyWithRequest = false
-			return
+		if status then
+			-- Verified fields: `promptRunning` (bool) + `queueDepth`, and `status`
+			-- transitions to "finished" when the agent's turn (incl. publish) is done.
+			local running = status.promptRunning == true or (tonumber(status.queueDepth) or 0) > 0
+			local finished = tostring(status.status or ""):lower() == "finished"
+			if running then
+				sawBusy = true
+			elseif sawBusy or finished then
+				tell(player, "Done! Updating the game now… 🚀")
+				task.wait(2) -- small grace for the new version to start rolling out
+				Reload.reloadAll()
+				busyWithRequest = false
+				return
+			end
 		end
 	end
 	tell(player, "Hmm, that took too long — try again? ⏳")
