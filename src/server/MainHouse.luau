@@ -875,7 +875,7 @@ function MainHouse.build(parent: Instance)
 		Color3.fromRGB(35, 33, 32),
 		Enum.Material.SmoothPlastic
 	)
-	block(
+	local tvScreen = block(
 		interior,
 		"TVScreen",
 		Vector3.new(12, 7, 0.4),
@@ -883,6 +883,81 @@ function MainHouse.build(parent: Instance)
 		Color3.fromRGB(15, 15, 18),
 		Enum.Material.SmoothPlastic
 	)
+
+	-- ── Interactive TV — browse & jump into popular Roblox games ──
+	local TV_CHANNELS = {
+		{ name = "Adopt Me!", placeId = 920587237 },
+		{ name = "Blox Fruits", placeId = 2753915549 },
+		{ name = "Royale High", placeId = 735030788 },
+		{ name = "Tower of Hell", placeId = 1962086868 },
+		{ name = "Murder Mystery 2", placeId = 142823291 },
+	}
+	local tvChannel = 1
+
+	-- Surface GUI displayed on the screen face that faces the sofa (+Z = Back)
+	local tvGui = Instance.new("SurfaceGui")
+	tvGui.Name = "TVGui"
+	tvGui.Face = Enum.NormalId.Back
+	tvGui.PixelsPerStud = 20
+	tvGui.Parent = tvScreen
+
+	local tvBg = Instance.new("Frame")
+	tvBg.Size = UDim2.fromScale(1, 1)
+	tvBg.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
+	tvBg.BorderSizePixel = 0
+	tvBg.Parent = tvGui
+
+	local tvThumbnail = Instance.new("ImageLabel")
+	tvThumbnail.Name = "Thumbnail"
+	tvThumbnail.Size = UDim2.new(1, 0, 0.83, 0)
+	tvThumbnail.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+	tvThumbnail.BorderSizePixel = 0
+	tvThumbnail.Image = string.format("rbxthumb://type=GameIcon&id=%d&w=512&h=512", TV_CHANNELS[1].placeId)
+	tvThumbnail.ScaleType = Enum.ScaleType.Fit
+	tvThumbnail.Parent = tvBg
+
+	local tvLabel = Instance.new("TextLabel")
+	tvLabel.Size = UDim2.new(1, 0, 0.17, 0)
+	tvLabel.Position = UDim2.new(0, 0, 0.83, 0)
+	tvLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	tvLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	tvLabel.Text = "📺  " .. TV_CHANNELS[1].name
+	tvLabel.Font = Enum.Font.GothamBold
+	tvLabel.TextScaled = true
+	tvLabel.Parent = tvBg
+
+	-- Press E to change the channel
+	local tvChangePrompt = Instance.new("ProximityPrompt")
+	tvChangePrompt.ActionText = "Change Channel"
+	tvChangePrompt.ObjectText = "TV"
+	tvChangePrompt.HoldDuration = 0
+	tvChangePrompt.MaxActivationDistance = 10
+	tvChangePrompt.RequiresLineOfSight = false
+	tvChangePrompt.Parent = tvScreen
+
+	tvChangePrompt.Triggered:Connect(function(_player: Player)
+		tvChannel = (tvChannel % #TV_CHANNELS) + 1
+		tvThumbnail.Image = string.format("rbxthumb://type=GameIcon&id=%d&w=512&h=512", TV_CHANNELS[tvChannel].placeId)
+		tvLabel.Text = "📺  " .. TV_CHANNELS[tvChannel].name
+	end)
+
+	-- Hold F to teleport into whatever game is on screen
+	local tvJoinPrompt = Instance.new("ProximityPrompt")
+	tvJoinPrompt.ActionText = "Join Game"
+	tvJoinPrompt.ObjectText = ""
+	tvJoinPrompt.HoldDuration = 1.5
+	tvJoinPrompt.MaxActivationDistance = 10
+	tvJoinPrompt.RequiresLineOfSight = false
+	tvJoinPrompt.KeyboardKeyCode = Enum.KeyCode.F
+	tvJoinPrompt.Parent = tvScreen
+
+	tvJoinPrompt.Triggered:Connect(function(player: Player)
+		task.spawn(function()
+			pcall(function()
+				game:GetService("TeleportService"):TeleportAsync(TV_CHANNELS[tvChannel].placeId, { player })
+			end)
+		end)
+	end)
 
 	-- Floor lamp
 	block(

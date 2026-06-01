@@ -1,10 +1,11 @@
 --!strict
--- Client camera controller.
+-- Client camera controller + multi-jump/somersault.
 -- Walking uses Roblox's default camera. Driving switches to a smooth chase camera
 -- so spawned dealership cars are easier to control on keyboard and iPad.
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 
@@ -126,6 +127,81 @@ local function setVehicleCamera(seat: VehicleSeat)
 	RunService:BindToRenderStep(CAMERA_BIND, CAMERA_PRIORITY, updateVehicleCamera)
 end
 
+-- ═══════════════════════════════════════════════════
+-- MULTI-JUMP + SOMERSAULT 🚀
+-- ═══════════════════════════════════════════════════
+
+local MAX_AIR_JUMPS = 3 -- 1 ground jump + 3 air = 4 total
+local AIR_JUMP_VELOCITY = 120 -- upward boost per air jump
+local FLIP_SPIN_SPEED = math.rad(1080) -- 3 rotations/sec
+local FLIP_DURATION = 0.4
+
+local airJumpsLeft = MAX_AIR_JUMPS
+local isFlipping = false
+
+local function doSomersault(rootPart: BasePart)
+	if isFlipping then
+		return
+	end
+	isFlipping = true
+
+	local spin = Instance.new("BodyAngularVelocity")
+	spin.Name = "SomersaultSpin"
+	spin.AngularVelocity = rootPart.CFrame.RightVector * FLIP_SPIN_SPEED
+	spin.MaxTorque = Vector3.new(1e5, 0, 1e5)
+	spin.Parent = rootPart
+
+	task.delay(FLIP_DURATION, function()
+		if spin.Parent then
+			spin:Destroy()
+		end
+		isFlipping = false
+	end)
+end
+
+local function setupMultiJump(character: Model)
+	local humanoid = character:WaitForChild("Humanoid", 10)
+	if not humanoid or not humanoid:IsA("Humanoid") then
+		return
+	end
+	local rootPart = character:WaitForChild("HumanoidRootPart", 10)
+	if not rootPart or not rootPart:IsA("BasePart") then
+		return
+	end
+	local root = rootPart :: BasePart
+
+	airJumpsLeft = MAX_AIR_JUMPS
+
+	-- Reset air jumps when touching ground
+	humanoid.StateChanged:Connect(function(_, newState: Enum.HumanoidStateType)
+		if
+			newState == Enum.HumanoidStateType.Landed
+			or newState == Enum.HumanoidStateType.Running
+			or newState == Enum.HumanoidStateType.RunningNoPhysics
+		then
+			airJumpsLeft = MAX_AIR_JUMPS
+		end
+	end)
+
+	-- Air jump on each jump press while airborne
+	UserInputService.JumpRequest:Connect(function()
+		if not humanoid or (humanoid :: Humanoid).Health <= 0 then
+			return
+		end
+		local state = (humanoid :: Humanoid):GetState()
+		local inAir = state == Enum.HumanoidStateType.Freefall or state == Enum.HumanoidStateType.Jumping
+
+		if inAir and airJumpsLeft > 0 then
+			airJumpsLeft -= 1
+			local vel = root.AssemblyLinearVelocity
+			root.AssemblyLinearVelocity = Vector3.new(vel.X, AIR_JUMP_VELOCITY, vel.Z)
+			doSomersault(root)
+		end
+	end)
+end
+
+-- ═══════════════════════════════════════════════════
+
 local function bindCharacter(character: Model)
 	resetDefaultCamera()
 
@@ -141,6 +217,8 @@ local function bindCharacter(character: Model)
 			resetDefaultCamera()
 		end
 	end)
+
+	setupMultiJump(character)
 end
 
 if player.Character then
