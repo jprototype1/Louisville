@@ -108,12 +108,12 @@ function WorldBuilder.build(parent: Instance)
 	for _ = 1, 6 do
 		makeHill(scatterPoint()).Parent = world
 	end
-	-- for _ = 1, 70 do
-	-- 	makeTree(scatterPoint()).Parent = world
-	-- end
-	-- for _ = 1, 40 do
-	-- 	makeRock(scatterPoint()).Parent = world
-	-- end
+	for _ = 1, 70 do
+		makeTree(scatterPoint()).Parent = world
+	end
+	for _ = 1, 40 do
+		makeRock(scatterPoint()).Parent = world
+	end
 
 	world.Parent = parent
 	print(("[WorldBuilder] built world with %d objects"):format(#world:GetChildren()))

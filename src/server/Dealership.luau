@@ -68,8 +68,8 @@ local function buildShowroom(): Folder
 
 	local floor = newPart("Floor", {
 		Size = FLOOR_SIZE,
-		Material = Enum.Material.Concrete,
-		Color = Color3.fromRGB(70, 70, 75),
+		Material = Enum.Material.SmoothPlastic,
+		Color = Color3.fromRGB(235, 235, 240),
 		Position = SHOWROOM_CENTER + Vector3.new(0, 0.5, 0),
 	})
 	floor.Parent = folder
