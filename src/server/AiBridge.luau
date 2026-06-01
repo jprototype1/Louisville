@@ -10,11 +10,15 @@
 -- ── SETUP (operator, one-time) ────────────────────────────────────────────────
 --   1. Enable HTTP requests for the game:
 --        Game Settings → Security → "Allow HTTP Requests" = ON
---   2. Store the OpenACP access token as a Roblox Secret so it is NEVER in code:
+--   2. Store a durable OpenACP Bearer token as a Roblox Secret so it is NEVER in code:
 --        Creator Dashboard → your experience → Secrets → add key `openacp_token`
---        with value = a scoped token minted by:  openacp remote --name in-game
---      (Falls back to LOCAL_TOKEN below only for Studio testing — leave it blank
---       in commits; the token would otherwise ship inside the published game.)
+--        Token options (both verified to work over the tunnel):
+--          • the daemon's static api-secret (.openacp/api-secret) — never expires, but
+--            it is the MASTER admin secret (full daemon control), so treat it carefully
+--          • or a long-lived admin token: `openacp remote --role admin --expire 8760h`,
+--            then redeem its one-time code once to get the bearer (revocable + expiring)
+--      (Falls back to localToken below only for Studio testing — leave it blank in
+--       commits; the token would otherwise ship inside the published game.)
 --   3. Confirm CONFIG.baseUrl matches your tunnel (openacp remote prints it).
 
 local HttpService = game:GetService("HttpService")
@@ -34,13 +38,10 @@ local CONFIG = {
 
 -- API contract verified live against the OpenACP daemon (2026-06-01):
 --   * routes live under /api/v1/sessions
---   * auth is an `Authorization: Bearer <token>` header (the ?code= in `openacp
---     remote` is a one-time browser code, NOT a durable token — see OPEN ITEM below)
+--   * auth is an `Authorization: Bearer <token>` header. The ?code= from `openacp
+--     remote` is a one-time 30-min redemption code, NOT the token — but the daemon's
+--     static api-secret works directly as a durable Bearer (verified over the tunnel).
 --   * responses are wrapped: { success = bool, data = {...} }
---
--- ⚠️ OPEN ITEM: `openacp remote` tokens currently expire in ~30 min, so they aren't
--- suitable to embed. A durable Bearer token (or a code→JWT exchange step) still needs
--- to be sorted before this works unattended.
 
 local AiBridge = {}
 
