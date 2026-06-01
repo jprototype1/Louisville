@@ -15,9 +15,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local AiBridge = require(script.Parent.AiBridge)
 local Reload = require(script.Parent.Reload)
 
--- vvv FILL THIS IN vvv  (e.g. [123456789] = true, [987654321] = true)
-local ALLOWED_USER_IDS: { [number]: boolean } = {}
--- ^^^^^^^^^^^^^^^^^^^^
+-- Who may prompt the builder from in-game. Add UserIds here.
+local ALLOWED_USER_IDS: { [number]: boolean } = {
+	[3609872486] = true, -- ThatGirlMehtab
+}
 
 local POLL_EVERY = 5 -- seconds between status checks
 local MAX_POLLS = 60 -- give up after ~5 minutes
