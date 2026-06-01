@@ -15,5 +15,11 @@ roblox.yml
 # Wally packages (installed via `wally install`; commit wally.lock instead)
 /Packages/
 
+# Secrets — Open Cloud API key
+.env
+
+# Build output
+/build/
+
 # macOS
 .DS_Store

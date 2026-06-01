@@ -23,5 +23,13 @@
   {
     "label": "StyLua: check (CI-style)",
     "command": "stylua --check src/"
+  },
+  {
+    "label": "Roblox: PUBLISH live (Open Cloud)",
+    "command": "./scripts/publish.sh"
+  },
+  {
+    "label": "Roblox: upload version (no go-live)",
+    "command": "./scripts/publish.sh --save"
   }
 ]
