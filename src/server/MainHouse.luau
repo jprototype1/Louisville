@@ -2,9 +2,12 @@
 -- Builds the main character's home: a two-story villa with a pool,
 -- garage storage, driveway, patio, and decorative lighting.
 
+local TweenService = game:GetService("TweenService")
+
 local MainHouse = {}
 
 local HOUSE_ORIGIN = Vector3.new(-120, 0, 0)
+local DOOR_TWEEN = TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut)
 
 local COLORS = {
 	stucco = Color3.fromRGB(213, 197, 173),
@@ -178,6 +181,48 @@ local function makeGarageStoragePad(parent: Instance, index: number, offset: Vec
 	pad:SetAttribute("PadIndex", index)
 end
 
+local function makeDoor(
+	parent: Instance,
+	name: string,
+	size: Vector3,
+	offset: Vector3,
+	hingeSide: string,
+	swingAngle: number,
+	yawDegrees: number?
+)
+	local closedCF = cf(offset, yawDegrees)
+	local halfW = size.Z / 2
+	local hingeLocalZ = (hingeSide == "right") and halfW or -halfW
+	local hingeCF = closedCF * CFrame.new(0, 0, hingeLocalZ)
+	local openCF = hingeCF * CFrame.Angles(0, math.rad(swingAngle), 0) * CFrame.new(0, 0, -hingeLocalZ)
+
+	local door = newPart({
+		Name = name,
+		Size = size,
+		Color = Color3.fromRGB(91, 54, 35),
+		Material = Enum.Material.Wood,
+		CFrame = closedCF,
+	})
+	door.Parent = parent
+
+	local prompt = Instance.new("ProximityPrompt")
+	prompt.ActionText = "Open Door"
+	prompt.ObjectText = ""
+	prompt.HoldDuration = 0
+	prompt.MaxActivationDistance = 10
+	prompt.RequiresLineOfSight = false
+	prompt.Parent = door
+
+	local isOpen = false
+	prompt.Triggered:Connect(function()
+		isOpen = not isOpen
+		TweenService:Create(door, DOOR_TWEEN, { CFrame = isOpen and openCF or closedCF }):Play()
+		prompt.ActionText = isOpen and "Close Door" or "Open Door"
+	end)
+
+	return door
+end
+
 function MainHouse.build(parent: Instance)
 	local existing = parent:FindFirstChild("MainCharacterHouse")
 	if existing then
@@ -233,27 +278,131 @@ function MainHouse.build(parent: Instance)
 		Enum.Material.Concrete
 	)
 
+	-- First floor: thin walls with door openings instead of solid block
+	-- Front wall (X=21 face) — split around front door at Z=13, door is 7 wide, 10 tall
 	block(
 		structure,
-		"FirstFloorStucco",
-		Vector3.new(42, 18, 56),
-		Vector3.new(0, 9, 0),
+		"FrontWallLeft",
+		Vector3.new(1, 18, 37.5),
+		Vector3.new(20.5, 9, -9.25),
 		COLORS.stucco,
 		Enum.Material.SmoothPlastic
 	)
 	block(
 		structure,
-		"SecondFloorStucco",
-		Vector3.new(34, 16, 42),
-		Vector3.new(-5, 26, 0),
+		"FrontWallRight",
+		Vector3.new(1, 18, 11.5),
+		Vector3.new(20.5, 9, 22.25),
 		COLORS.stucco,
 		Enum.Material.SmoothPlastic
 	)
 	block(
 		structure,
-		"StoneEntryTower",
-		Vector3.new(19, 31, 19),
-		Vector3.new(18, 15.5, 17),
+		"FrontWallAboveDoor",
+		Vector3.new(1, 8, 7),
+		Vector3.new(20.5, 14, 13),
+		COLORS.stucco,
+		Enum.Material.SmoothPlastic
+	)
+	-- Back wall (X=-21 face) — split around back door at Z=20, door is 6 wide, 10 tall
+	block(
+		structure,
+		"BackWallLeft",
+		Vector3.new(1, 18, 45),
+		Vector3.new(-20.5, 9, -5.5),
+		COLORS.stucco,
+		Enum.Material.SmoothPlastic
+	)
+	block(
+		structure,
+		"BackWallRight",
+		Vector3.new(1, 18, 5),
+		Vector3.new(-20.5, 9, 25.5),
+		COLORS.stucco,
+		Enum.Material.SmoothPlastic
+	)
+	block(
+		structure,
+		"BackWallAboveDoor",
+		Vector3.new(1, 8, 6),
+		Vector3.new(-20.5, 14, 20),
+		COLORS.stucco,
+		Enum.Material.SmoothPlastic
+	)
+	-- Side walls
+	block(
+		structure,
+		"SideWallLeft",
+		Vector3.new(42, 18, 1),
+		Vector3.new(0, 9, 27.5),
+		COLORS.stucco,
+		Enum.Material.SmoothPlastic
+	)
+	block(
+		structure,
+		"SideWallRight",
+		Vector3.new(42, 18, 1),
+		Vector3.new(0, 9, -27.5),
+		COLORS.stucco,
+		Enum.Material.SmoothPlastic
+	)
+
+	-- Second floor: thin walls (hollow)
+	block(
+		structure,
+		"UpperFrontWall",
+		Vector3.new(1, 16, 42),
+		Vector3.new(12, 26, 0),
+		COLORS.stucco,
+		Enum.Material.SmoothPlastic
+	)
+	block(
+		structure,
+		"UpperBackWall",
+		Vector3.new(1, 16, 42),
+		Vector3.new(-22, 26, 0),
+		COLORS.stucco,
+		Enum.Material.SmoothPlastic
+	)
+	block(
+		structure,
+		"UpperSideWallLeft",
+		Vector3.new(34, 16, 1),
+		Vector3.new(-5, 26, 20.5),
+		COLORS.stucco,
+		Enum.Material.SmoothPlastic
+	)
+	block(
+		structure,
+		"UpperSideWallRight",
+		Vector3.new(34, 16, 1),
+		Vector3.new(-5, 26, -20.5),
+		COLORS.stucco,
+		Enum.Material.SmoothPlastic
+	)
+
+	-- Entry tower: hollow walls instead of solid
+	block(
+		structure,
+		"TowerFront",
+		Vector3.new(1, 31, 19),
+		Vector3.new(27.5, 15.5, 17),
+		COLORS.stone,
+		Enum.Material.Cobblestone
+	)
+	block(
+		structure,
+		"TowerLeft",
+		Vector3.new(19, 31, 1),
+		Vector3.new(18, 15.5, 26.5),
+		COLORS.stone,
+		Enum.Material.Cobblestone
+	)
+	block(
+		structure,
+		"TowerRight",
+		Vector3.new(19, 31, 1),
+		Vector3.new(18, 15.5, 7.5),
 		COLORS.stone,
 		Enum.Material.Cobblestone
 	)
@@ -271,14 +420,8 @@ function MainHouse.build(parent: Instance)
 	makeRoof(structure, "GarageRoof", Vector3.new(30, 2.2, 32), Vector3.new(14, 15.8, -24))
 	block(structure, "TowerRoof", Vector3.new(23, 3.4, 23), Vector3.new(18, 32.4, 17), COLORS.roof, Enum.Material.Brick)
 
-	block(
-		details,
-		"FrontDoor",
-		Vector3.new(1, 10, 7),
-		Vector3.new(21.15, 5, 13),
-		Color3.fromRGB(91, 54, 35),
-		Enum.Material.Wood
-	)
+	makeDoor(details, "FrontDoor", Vector3.new(1, 10, 7), Vector3.new(21.15, 5, 13), "left", -90)
+	makeDoor(details, "BackDoor", Vector3.new(1, 10, 6), Vector3.new(-21.15, 5, 20), "left", 90)
 	block(
 		details,
 		"FrontDoorArch",
@@ -418,6 +561,537 @@ function MainHouse.build(parent: Instance)
 	makePalm(details, "PoolPalmLeft", Vector3.new(-61, 0, 4), 17)
 	makePalm(details, "PoolPalmRight", Vector3.new(-58, 0, 52), 15)
 	makePalm(details, "DrivewayPalm", Vector3.new(43, 0, -43), 16)
+
+	-- ═══════════════════════════════════════════════════
+	-- BACKYARD WATERFALL
+	-- ═══════════════════════════════════════════════════
+
+	local waterfall = Instance.new("Folder")
+	waterfall.Name = "Waterfall"
+	waterfall.Parent = house
+
+	-- Stone wall the water flows down
+	block(
+		waterfall,
+		"WaterfallWall",
+		Vector3.new(14, 20, 3),
+		Vector3.new(-45, 10, 50),
+		COLORS.stoneDark,
+		Enum.Material.Slate
+	)
+	-- Flowing water (glass with glow)
+	local waterFlow = block(
+		waterfall,
+		"WaterFlow",
+		Vector3.new(10, 19, 1),
+		Vector3.new(-45, 10, 49),
+		Color3.fromRGB(80, 180, 230),
+		Enum.Material.Glass
+	)
+	waterFlow.Transparency = 0.3
+	waterFlow.Reflectance = 0.15
+	-- Water glow
+	local wfGlow = lightBlock(waterfall, "WaterGlow", Vector3.new(8, 18, 0.5), Vector3.new(-45, 10, 48.5))
+	wfGlow.Color = Color3.fromRGB(100, 200, 245)
+	local wfLight = wfGlow:FindFirstChild("WarmGlow")
+	if wfLight and wfLight:IsA("PointLight") then
+		wfLight.Color = Color3.fromRGB(100, 200, 245)
+		wfLight.Range = 24
+	end
+	-- Catch basin at bottom
+	block(
+		waterfall,
+		"CatchBasin",
+		Vector3.new(18, 1.2, 10),
+		Vector3.new(-45, 0.6, 46),
+		Color3.fromRGB(42, 88, 109),
+		Enum.Material.Slate
+	)
+	local catchWater = block(
+		waterfall,
+		"CatchWater",
+		Vector3.new(16, 0.5, 8),
+		Vector3.new(-45, 1.1, 46),
+		Color3.fromRGB(60, 165, 215),
+		Enum.Material.Glass
+	)
+	catchWater.Transparency = 0.25
+	catchWater.Reflectance = 0.1
+	-- Decorative rocks around waterfall
+	block(
+		waterfall,
+		"WaterfallRockL",
+		Vector3.new(4, 6, 5),
+		Vector3.new(-53, 3, 48),
+		COLORS.stoneDark,
+		Enum.Material.Slate
+	)
+	block(
+		waterfall,
+		"WaterfallRockR",
+		Vector3.new(3, 4, 4),
+		Vector3.new(-37, 2, 49),
+		COLORS.stoneDark,
+		Enum.Material.Slate
+	)
+
+	-- ═══════════════════════════════════════════════════
+	-- INTERIOR — modern contemporary
+	-- ═══════════════════════════════════════════════════
+
+	local interior = Instance.new("Folder")
+	interior.Name = "Interior"
+	interior.Parent = house
+
+	-- Ground floor — dark polished marble (no grass!)
+	block(
+		interior,
+		"GroundFloor",
+		Vector3.new(40, 0.5, 54),
+		Vector3.new(0, 0.3, 0),
+		Color3.fromRGB(45, 42, 40),
+		Enum.Material.Marble
+	)
+
+	-- Second-floor slab — light hardwood
+	block(
+		interior,
+		"SecondFloorSlab",
+		Vector3.new(40, 0.8, 54),
+		Vector3.new(0, 18, 0),
+		Color3.fromRGB(180, 155, 125),
+		Enum.Material.Wood
+	)
+
+	-- Ceiling (top of first floor) — white
+	block(
+		interior,
+		"FirstFloorCeiling",
+		Vector3.new(40, 0.3, 54),
+		Vector3.new(0, 17.85, 0),
+		Color3.fromRGB(245, 245, 245),
+		Enum.Material.SmoothPlastic
+	)
+
+	-- ── First-floor walls (modern white) ──
+	block(
+		interior,
+		"KitchenDivider",
+		Vector3.new(0.8, 17, 26),
+		Vector3.new(0, 9, -13),
+		Color3.fromRGB(240, 240, 240),
+		Enum.Material.SmoothPlastic
+	)
+	block(
+		interior,
+		"HallwayBackWall",
+		Vector3.new(20, 17, 0.8),
+		Vector3.new(-10, 9, 0),
+		Color3.fromRGB(240, 240, 240),
+		Enum.Material.SmoothPlastic
+	)
+
+	-- ── Stairs — floating modern style ──
+	local stairCount = 12
+	local stairHeight = 17.2 / stairCount
+	local stairDepth = 3
+	for i = 0, stairCount - 1 do
+		block(
+			interior,
+			("Stair%d"):format(i + 1),
+			Vector3.new(6, stairHeight * 0.6, stairDepth),
+			Vector3.new(12, 0.6 + stairHeight * i + stairHeight / 2, -22 + stairDepth * i),
+			Color3.fromRGB(60, 55, 50),
+			Enum.Material.Marble
+		)
+	end
+	-- Glass railing
+	local stairRail = block(
+		interior,
+		"StairRail",
+		Vector3.new(0.3, 4, stairDepth * stairCount),
+		Vector3.new(15, 12, -22 + (stairDepth * stairCount) / 2),
+		Color3.fromRGB(200, 220, 235),
+		Enum.Material.Glass
+	)
+	stairRail.Transparency = 0.4
+
+	-- ── Second-floor walls ──
+	block(
+		interior,
+		"BedroomDivider",
+		Vector3.new(0.8, 15, 40),
+		Vector3.new(-5, 26, 0),
+		Color3.fromRGB(240, 240, 240),
+		Enum.Material.SmoothPlastic
+	)
+	makeDoor(interior, "BedroomDoor", Vector3.new(0.8, 9, 5), Vector3.new(-5, 22.5, 10), "left", -90)
+
+	-- ═══════════════════════════════════════════════════
+	-- FIRST-FLOOR FURNITURE — modern contemporary
+	-- ═══════════════════════════════════════════════════
+
+	-- ── Living room ──
+	-- L-shaped sectional sofa (charcoal)
+	block(
+		interior,
+		"SofaMain",
+		Vector3.new(12, 2.8, 4.5),
+		Vector3.new(-10, 2, 16),
+		Color3.fromRGB(55, 55, 58),
+		Enum.Material.Fabric
+	)
+	block(
+		interior,
+		"SofaBack",
+		Vector3.new(12, 1.8, 0.6),
+		Vector3.new(-10, 3.5, 18.2),
+		Color3.fromRGB(45, 45, 48),
+		Enum.Material.Fabric
+	)
+	block(
+		interior,
+		"SofaCorner",
+		Vector3.new(4.5, 2.8, 8),
+		Vector3.new(-15.5, 2, 12),
+		Color3.fromRGB(55, 55, 58),
+		Enum.Material.Fabric
+	)
+	-- Accent pillows
+	block(
+		interior,
+		"AccentPillow1",
+		Vector3.new(2.5, 1.5, 2),
+		Vector3.new(-7, 3.5, 16),
+		Color3.fromRGB(200, 160, 60),
+		Enum.Material.Fabric
+	)
+	block(
+		interior,
+		"AccentPillow2",
+		Vector3.new(2.5, 1.5, 2),
+		Vector3.new(-13, 3.5, 16),
+		Color3.fromRGB(180, 70, 50),
+		Enum.Material.Fabric
+	)
+
+	-- Glass + marble coffee table
+	block(
+		interior,
+		"CoffeeTableBase",
+		Vector3.new(3, 1.2, 2),
+		Vector3.new(-10, 0.9, 12),
+		Color3.fromRGB(45, 42, 40),
+		Enum.Material.Marble
+	)
+	local coffeeTop = block(
+		interior,
+		"CoffeeTableTop",
+		Vector3.new(7, 0.3, 4),
+		Vector3.new(-10, 1.65, 12),
+		Color3.fromRGB(190, 215, 225),
+		Enum.Material.Glass
+	)
+	coffeeTop.Transparency = 0.3
+
+	-- Modern TV wall
+	block(
+		interior,
+		"TVConsole",
+		Vector3.new(14, 2, 1.5),
+		Vector3.new(-10, 1.3, 7),
+		Color3.fromRGB(35, 33, 32),
+		Enum.Material.SmoothPlastic
+	)
+	block(
+		interior,
+		"TVScreen",
+		Vector3.new(12, 7, 0.4),
+		Vector3.new(-10, 6, 7),
+		Color3.fromRGB(15, 15, 18),
+		Enum.Material.SmoothPlastic
+	)
+
+	-- Floor lamp
+	block(
+		interior,
+		"FloorLampPole",
+		Vector3.new(0.4, 7, 0.4),
+		Vector3.new(-3, 4, 18),
+		Color3.fromRGB(180, 155, 100),
+		Enum.Material.Metal
+	)
+	lightBlock(interior, "FloorLampShade", Vector3.new(2.5, 2, 2.5), Vector3.new(-3, 8, 18))
+
+	-- ── Kitchen (modern white + marble) ──
+	-- Island counter
+	block(
+		interior,
+		"KitchenIsland",
+		Vector3.new(12, 3.8, 4),
+		Vector3.new(8, 2.2, -16),
+		Color3.fromRGB(240, 238, 235),
+		Enum.Material.SmoothPlastic
+	)
+	block(
+		interior,
+		"IslandTop",
+		Vector3.new(12.4, 0.4, 4.4),
+		Vector3.new(8, 4.3, -16),
+		Color3.fromRGB(220, 215, 210),
+		Enum.Material.Marble
+	)
+	-- Bar stools (3)
+	for si = 0, 2 do
+		block(
+			interior,
+			("BarStool%d"):format(si + 1),
+			Vector3.new(1.8, 3.2, 1.8),
+			Vector3.new(4 + si * 4, 1.9, -12.5),
+			Color3.fromRGB(50, 50, 52),
+			Enum.Material.Metal
+		)
+	end
+
+	-- Wall cabinets
+	block(
+		interior,
+		"WallCabinets",
+		Vector3.new(16, 4, 1.5),
+		Vector3.new(10, 13, -26.5),
+		Color3.fromRGB(240, 238, 235),
+		Enum.Material.SmoothPlastic
+	)
+	-- Fridge (stainless steel)
+	block(
+		interior,
+		"Fridge",
+		Vector3.new(4, 9, 3.5),
+		Vector3.new(18, 5, -25),
+		Color3.fromRGB(195, 200, 205),
+		Enum.Material.Metal
+	)
+	-- Fridge handle
+	block(
+		interior,
+		"FridgeHandle",
+		Vector3.new(0.2, 5, 0.3),
+		Vector3.new(16, 5.5, -23.3),
+		Color3.fromRGB(160, 165, 170),
+		Enum.Material.Metal
+	)
+
+	-- ── Dining area ──
+	-- Marble dining table
+	block(
+		interior,
+		"DiningTable",
+		Vector3.new(10, 0.5, 5),
+		Vector3.new(-10, 3.2, -10),
+		Color3.fromRGB(230, 225, 218),
+		Enum.Material.Marble
+	)
+	block(
+		interior,
+		"DiningTableLeg1",
+		Vector3.new(1, 2.7, 1),
+		Vector3.new(-14, 1.5, -12),
+		Color3.fromRGB(180, 155, 100),
+		Enum.Material.Metal
+	)
+	block(
+		interior,
+		"DiningTableLeg2",
+		Vector3.new(1, 2.7, 1),
+		Vector3.new(-6, 1.5, -12),
+		Color3.fromRGB(180, 155, 100),
+		Enum.Material.Metal
+	)
+	-- Modern dining chairs (4)
+	for ci, chairOff in
+		{
+			Vector3.new(-6, 0, 0),
+			Vector3.new(6, 0, 0),
+			Vector3.new(0, 0, -3.5),
+			Vector3.new(0, 0, 3.5),
+		}
+	do
+		block(
+			interior,
+			("DiningChair%d"):format(ci),
+			Vector3.new(2, 3.2, 2),
+			Vector3.new(-10 + chairOff.X, 1.9, -10 + chairOff.Z),
+			Color3.fromRGB(55, 55, 58),
+			Enum.Material.SmoothPlastic
+		)
+	end
+
+	-- ── Accent wall art (first floor) ──
+	block(
+		interior,
+		"WallArt1",
+		Vector3.new(0.3, 5, 8),
+		Vector3.new(-19.8, 9, 16),
+		Color3.fromRGB(40, 80, 120),
+		Enum.Material.SmoothPlastic
+	)
+	block(
+		interior,
+		"WallArt2",
+		Vector3.new(0.3, 4, 4),
+		Vector3.new(-19.8, 10, 6),
+		Color3.fromRGB(180, 100, 50),
+		Enum.Material.SmoothPlastic
+	)
+
+	-- ═══════════════════════════════════════════════════
+	-- SECOND-FLOOR FURNITURE — modern bedroom + office
+	-- ═══════════════════════════════════════════════════
+
+	-- ── Master bedroom ──
+	-- Platform bed (low profile, dark wood)
+	block(
+		interior,
+		"BedPlatform",
+		Vector3.new(10, 1.2, 11),
+		Vector3.new(-14, 19, 12),
+		Color3.fromRGB(50, 42, 38),
+		Enum.Material.Wood
+	)
+	block(
+		interior,
+		"Mattress",
+		Vector3.new(8, 1.5, 9.5),
+		Vector3.new(-14, 20.1, 12),
+		Color3.fromRGB(240, 238, 235),
+		Enum.Material.Fabric
+	)
+	-- Pillows
+	block(
+		interior,
+		"PillowL",
+		Vector3.new(3, 0.8, 2.5),
+		Vector3.new(-16, 21.1, 16),
+		Color3.fromRGB(235, 235, 240),
+		Enum.Material.Fabric
+	)
+	block(
+		interior,
+		"PillowR",
+		Vector3.new(3, 0.8, 2.5),
+		Vector3.new(-12, 21.1, 16),
+		Color3.fromRGB(235, 235, 240),
+		Enum.Material.Fabric
+	)
+	-- Headboard
+	block(
+		interior,
+		"Headboard",
+		Vector3.new(10, 4, 0.6),
+		Vector3.new(-14, 21.5, 17.2),
+		Color3.fromRGB(65, 55, 48),
+		Enum.Material.Wood
+	)
+	-- Nightstands
+	block(
+		interior,
+		"NightstandL",
+		Vector3.new(2.5, 2, 2),
+		Vector3.new(-19.5, 19.5, 15),
+		Color3.fromRGB(55, 48, 42),
+		Enum.Material.Wood
+	)
+	block(
+		interior,
+		"NightstandR",
+		Vector3.new(2.5, 2, 2),
+		Vector3.new(-8.5, 19.5, 15),
+		Color3.fromRGB(55, 48, 42),
+		Enum.Material.Wood
+	)
+	-- Bedside lamps
+	lightBlock(interior, "BedsideLampL", Vector3.new(1.2, 1.8, 1.2), Vector3.new(-19.5, 21, 15))
+	lightBlock(interior, "BedsideLampR", Vector3.new(1.2, 1.8, 1.2), Vector3.new(-8.5, 21, 15))
+
+	-- ── Office / study ──
+	-- Sleek desk (white + metal legs)
+	block(
+		interior,
+		"DeskTop",
+		Vector3.new(10, 0.4, 4),
+		Vector3.new(6, 20.4, 16),
+		Color3.fromRGB(240, 238, 235),
+		Enum.Material.SmoothPlastic
+	)
+	block(
+		interior,
+		"DeskLegL",
+		Vector3.new(0.5, 2, 3.5),
+		Vector3.new(1.5, 19.2, 16),
+		Color3.fromRGB(180, 155, 100),
+		Enum.Material.Metal
+	)
+	block(
+		interior,
+		"DeskLegR",
+		Vector3.new(0.5, 2, 3.5),
+		Vector3.new(10.5, 19.2, 16),
+		Color3.fromRGB(180, 155, 100),
+		Enum.Material.Metal
+	)
+	-- Monitor
+	block(
+		interior,
+		"Monitor",
+		Vector3.new(6, 4, 0.3),
+		Vector3.new(6, 23, 17.5),
+		Color3.fromRGB(20, 20, 22),
+		Enum.Material.SmoothPlastic
+	)
+	-- Office chair
+	block(
+		interior,
+		"OfficeChair",
+		Vector3.new(2.5, 3.5, 2.5),
+		Vector3.new(6, 20, 12),
+		Color3.fromRGB(40, 40, 42),
+		Enum.Material.Fabric
+	)
+
+	-- Modern bookshelf (open cubes style)
+	block(
+		interior,
+		"BookshelfFrame",
+		Vector3.new(8, 9, 2),
+		Vector3.new(7, 23, 20),
+		Color3.fromRGB(240, 238, 235),
+		Enum.Material.SmoothPlastic
+	)
+	-- Colored book blocks inside
+	block(
+		interior,
+		"Books1",
+		Vector3.new(3, 2, 1.5),
+		Vector3.new(5, 20, 20),
+		Color3.fromRGB(60, 90, 140),
+		Enum.Material.SmoothPlastic
+	)
+	block(
+		interior,
+		"Books2",
+		Vector3.new(3, 2, 1.5),
+		Vector3.new(9, 22, 20),
+		Color3.fromRGB(140, 60, 50),
+		Enum.Material.SmoothPlastic
+	)
+	block(
+		interior,
+		"Books3",
+		Vector3.new(2.5, 2, 1.5),
+		Vector3.new(5, 24, 20),
+		Color3.fromRGB(50, 120, 70),
+		Enum.Material.SmoothPlastic
+	)
 
 	print("[MainHouse] built main character house at X=-120, Z=0")
 end
