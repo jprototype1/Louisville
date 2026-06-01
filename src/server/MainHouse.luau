@@ -636,6 +636,76 @@ function MainHouse.build(parent: Instance)
 	)
 
 	-- ═══════════════════════════════════════════════════
+	-- BACKYARD TRAMPOLINE
+	-- ═══════════════════════════════════════════════════
+
+	local trampoline = Instance.new("Folder")
+	trampoline.Name = "Trampoline"
+	trampoline.Parent = house
+
+	-- Circular frame (dark metal ring)
+	local trampolineFrame = newPart({
+		Name = "TrampolineFrame",
+		Shape = Enum.PartType.Cylinder,
+		Size = Vector3.new(1.2, 14, 14),
+		Color = Color3.fromRGB(50, 50, 55),
+		Material = Enum.Material.Metal,
+		CFrame = CFrame.new(HOUSE_ORIGIN + Vector3.new(-22, 2, 48)) * CFrame.Angles(0, 0, math.rad(90)),
+	})
+	trampolineFrame.Parent = trampoline
+
+	-- Legs (4 short metal posts)
+	for li, legOff in { Vector3.new(5, 0, 5), Vector3.new(-5, 0, 5), Vector3.new(5, 0, -5), Vector3.new(-5, 0, -5) } do
+		local leg = newPart({
+			Name = ("TrampolineLeg%d"):format(li),
+			Size = Vector3.new(1, 2.2, 1),
+			Color = Color3.fromRGB(60, 60, 65),
+			Material = Enum.Material.Metal,
+			Position = HOUSE_ORIGIN + Vector3.new(-22 + legOff.X, 1.1, 48 + legOff.Z),
+		})
+		leg.Parent = trampoline
+	end
+
+	-- Bouncy pad (the part players jump on)
+	local bouncePad = newPart({
+		Name = "BouncePad",
+		Shape = Enum.PartType.Cylinder,
+		Size = Vector3.new(0.5, 12, 12),
+		Color = Color3.fromRGB(30, 30, 35),
+		Material = Enum.Material.Fabric,
+		CFrame = CFrame.new(HOUSE_ORIGIN + Vector3.new(-22, 2.3, 48)) * CFrame.Angles(0, 0, math.rad(90)),
+	})
+	bouncePad.Parent = trampoline
+
+	-- Bounce logic: launch the player upward when they land on the pad
+	local BOUNCE_FORCE = 120
+	local debounce: { [Player]: boolean } = {}
+
+	bouncePad.Touched:Connect(function(hit)
+		local character = hit.Parent :: Model
+		if not character then
+			return
+		end
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		local rootPart = character:FindFirstChild("HumanoidRootPart") :: BasePart?
+		if not humanoid or not rootPart then
+			return
+		end
+
+		local player = game:GetService("Players"):GetPlayerFromCharacter(character)
+		if not player or debounce[player] then
+			return
+		end
+
+		debounce[player] = true
+		rootPart.AssemblyLinearVelocity =
+			Vector3.new(rootPart.AssemblyLinearVelocity.X, BOUNCE_FORCE, rootPart.AssemblyLinearVelocity.Z)
+		task.delay(0.5, function()
+			debounce[player] = nil
+		end)
+	end)
+
+	-- ═══════════════════════════════════════════════════
 	-- INTERIOR — modern contemporary
 	-- ═══════════════════════════════════════════════════
 
