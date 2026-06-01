@@ -643,14 +643,15 @@ function MainHouse.build(parent: Instance)
 	trampoline.Name = "Trampoline"
 	trampoline.Parent = house
 
-	-- Circular frame (dark metal ring)
+	-- Circular frame (dark metal ring) — right next to the house so you land on the roof!
+	local trampolinePos = Vector3.new(-24, 2, 0) -- beside the back wall
 	local trampolineFrame = newPart({
 		Name = "TrampolineFrame",
 		Shape = Enum.PartType.Cylinder,
 		Size = Vector3.new(1.2, 14, 14),
 		Color = Color3.fromRGB(50, 50, 55),
 		Material = Enum.Material.Metal,
-		CFrame = CFrame.new(HOUSE_ORIGIN + Vector3.new(-22, 2, 48)) * CFrame.Angles(0, 0, math.rad(90)),
+		CFrame = CFrame.new(HOUSE_ORIGIN + trampolinePos) * CFrame.Angles(0, 0, math.rad(90)),
 	})
 	trampolineFrame.Parent = trampoline
 
@@ -661,7 +662,7 @@ function MainHouse.build(parent: Instance)
 			Size = Vector3.new(1, 2.2, 1),
 			Color = Color3.fromRGB(60, 60, 65),
 			Material = Enum.Material.Metal,
-			Position = HOUSE_ORIGIN + Vector3.new(-22 + legOff.X, 1.1, 48 + legOff.Z),
+			Position = HOUSE_ORIGIN + Vector3.new(trampolinePos.X + legOff.X, 1.1, trampolinePos.Z + legOff.Z),
 		})
 		leg.Parent = trampoline
 	end
@@ -673,12 +674,13 @@ function MainHouse.build(parent: Instance)
 		Size = Vector3.new(0.5, 12, 12),
 		Color = Color3.fromRGB(30, 30, 35),
 		Material = Enum.Material.Fabric,
-		CFrame = CFrame.new(HOUSE_ORIGIN + Vector3.new(-22, 2.3, 48)) * CFrame.Angles(0, 0, math.rad(90)),
+		CFrame = CFrame.new(HOUSE_ORIGIN + trampolinePos + Vector3.new(0, 0.3, 0)) * CFrame.Angles(0, 0, math.rad(90)),
 	})
 	bouncePad.Parent = trampoline
 
-	-- Bounce logic: launch the player upward when they land on the pad
-	local BOUNCE_FORCE = 120
+	-- Bounce logic: launch the player UP and slightly toward the roof center
+	local BOUNCE_FORCE = 140
+	local PUSH_TOWARD_ROOF = 20 -- gentle push so you arc onto the roof
 	local debounce: { [Player]: boolean } = {}
 
 	bouncePad.Touched:Connect(function(hit)
@@ -698,8 +700,8 @@ function MainHouse.build(parent: Instance)
 		end
 
 		debounce[player] = true
-		rootPart.AssemblyLinearVelocity =
-			Vector3.new(rootPart.AssemblyLinearVelocity.X, BOUNCE_FORCE, rootPart.AssemblyLinearVelocity.Z)
+		-- Launch up + push toward the house roof (positive X = toward the house)
+		rootPart.AssemblyLinearVelocity = Vector3.new(PUSH_TOWARD_ROOF, BOUNCE_FORCE, 0)
 		task.delay(0.5, function()
 			debounce[player] = nil
 		end)

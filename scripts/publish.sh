@@ -44,6 +44,18 @@ if [ "${1:-}" = "--save" ]; then
 	VERSION_TYPE="Saved"
 fi
 
+# Auto-save: commit the working tree before building so every published version
+# is a recoverable git commit. Never lose work to an accidental reset again.
+if git rev-parse --git-dir >/dev/null 2>&1; then
+	if [ -n "$(git status --porcelain)" ]; then
+		git add -A
+		git commit -q -m "auto-save before publish ($(date +%H:%M))" || true
+		echo "==> Auto-saved work to git ✓"
+		# Best-effort backup to GitHub (don't fail the publish if offline).
+		git push -q origin HEAD 2>/dev/null && echo "==> Backed up to GitHub ✓" || true
+	fi
+fi
+
 OUT="build/brookhaven.rbxl"
 mkdir -p build
 

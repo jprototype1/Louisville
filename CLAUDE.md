@@ -28,10 +28,15 @@ Talk to them like a friendly coach:
    This pushes the game live to "Louiville". They reload it in the Roblox app to see it.
 5. Tell them: "It's live! Reload Louiville on your iPad. 🎮"
 
+## Save their work — every time (IMPORTANT)
+- **After every change that builds, run `./scripts/publish.sh`.** It commits the work to git (so it can never be lost) AND puts it on their iPad. Don't leave a finished change unsaved.
+- If they're making several quick changes, still publish after each one — saving is cheap and protects their work.
+- `publish.sh` auto-commits + backs up to GitHub before building, so "publish" = "save + go live".
+
 ## Rules (keep things safe)
 - Work only on the **`nephew-playground`** branch (never `main`).
 - **Always run `./scripts/check.sh` before publishing.** Never publish a broken build.
-- **Always ask for a clear "yes" before `./scripts/publish.sh`** (it changes the live game).
+- **Confirm with a quick "putting it live, ok?" before `./scripts/publish.sh`** the first time in a session; after that, save freely.
 - **Never** touch, read aloud, or print secrets: the `.env` file and anything in `.openacp/`.
 - Don't run destructive git commands (force-push, reset --hard, deleting branches) without asking.
 
