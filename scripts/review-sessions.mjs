@@ -142,8 +142,61 @@ function listSessions() {
 	console.log(`All:       node scripts/review-sessions.mjs --all   (add --thinking / --full)\n`);
 }
 
+// ── live watch ───────────────────────────────────────────────────────────────
+// A short, fixed-width tag per session so interleaved lines are attributable.
+const TAGS = {};
+const EMOJIS = ["🟦", "🟩", "🟨", "🟧", "🟪", "🟥", "⬜", "🟫"];
+function sessionTag(id, hist) {
+	if (!TAGS[id]) {
+		const name = titleFor(id, hist).replace(/[^a-zA-Z0-9 ]/g, "");
+		const short = (name.split(/\s+/)[0] || id).slice(0, 8).padEnd(8);
+		TAGS[id] = `${EMOJIS[Object.keys(TAGS).length % EMOJIS.length]} ${short}`;
+	}
+	return TAGS[id];
+}
+
+function printTurnLive(id, hist, t) {
+	const tag = sessionTag(id, hist);
+	const stamp = `[${time(t.timestamp)}] ${tag}`;
+	if (t.role === "user") {
+		const who = t.meta?.channelUser?.displayName || "user";
+		console.log(`${stamp} 👤 ${who}: ${clip(String(t.content || ""), 200)}`);
+	} else if (t.role === "assistant") {
+		for (const s of t.steps || []) {
+			if (s.type === "text" && s.content?.trim()) console.log(`${stamp} 🤖 ${clip(s.content.trim(), 240)}`);
+			else if (s.type === "thinking" && showThinking) console.log(`${stamp}    💭 ${clip(s.content || "", 160)}`);
+			else if (s.type === "tool_call") console.log(`${stamp}    🔧 ${clip(toolSummary(s), 90)}`);
+		}
+	}
+}
+
+function watch() {
+	const seen = {};
+	console.log("👀 Watching all sessions live — interleaved, newest at the bottom. Ctrl+C to stop.\n");
+	// Seed: show the last 2 turns of each session for context, then only stream new ones.
+	for (const id of listFiles()) {
+		const h = loadHistory(id);
+		if (!h) continue;
+		const turns = h.turns || [];
+		for (const t of turns.slice(-2)) printTurnLive(id, h, t);
+		seen[id] = turns.length;
+	}
+	console.log("\n── live ──────────────────────────────────────────────────────────────────\n");
+	setInterval(() => {
+		for (const id of listFiles()) {
+			const h = loadHistory(id);
+			if (!h) continue;
+			const turns = h.turns || [];
+			for (let i = seen[id] ?? turns.length; i < turns.length; i++) printTurnLive(id, h, turns[i]);
+			seen[id] = turns.length;
+		}
+	}, 1200);
+}
+
 // ── dispatch ────────────────────────────────────────────────────────────────
-if (args.includes("--all")) {
+if (args.includes("--watch")) {
+	watch();
+} else if (args.includes("--all")) {
 	listFiles()
 		.map((id) => ({ id, last: sessionsMeta[id]?.lastActiveAt || "" }))
 		.sort((a, b) => String(a.last).localeCompare(String(b.last)))

@@ -39,5 +39,10 @@
   {
     "label": "Sessions: read latest transcript",
     "command": "node scripts/review-sessions.mjs latest"
+  },
+  {
+    "label": "Sessions: WATCH live (interleaved)",
+    "command": "node scripts/review-sessions.mjs --watch",
+    "use_new_terminal": true
   }
 ]
