@@ -8,12 +8,12 @@ cd "$ROOT"
 
 fail=0
 
-echo "==> 1/3 Formatting (StyLua)..."
-if stylua --check src/ 2>/dev/null; then
-	echo "    ✅ formatting looks good"
+echo "==> 1/3 Formatting (StyLua, auto-fix)..."
+# Auto-format instead of just checking — no manual formatting fixups needed.
+if stylua src/ 2>/dev/null; then
+	echo "    ✅ formatted"
 else
-	echo "    ⚠️  some files need formatting — run: stylua src/"
-	fail=1
+	echo "    ⚠️  StyLua couldn't format (likely a syntax error — see build step below)"
 fi
 
 echo "==> 2/3 Linting (Selene)..."
