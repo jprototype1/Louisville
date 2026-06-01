@@ -29,6 +29,10 @@ runSystem("Reload", function()
 	require(script.Reload).start()
 end)
 
+runSystem("AiPrompt", function()
+	require(script.AiPrompt).start()
+end)
+
 -- Super jump! Crank up jump power so you can reach space 🚀
 local SUPER_JUMP_POWER = 300
 

@@ -59,8 +59,29 @@ fi
 OUT="build/brookhaven.rbxl"
 mkdir -p build
 
+# Stamp a unique build id into BuildInfo so the game can tell builds apart (used by
+# auto-reload to avoid settling on a stale server). Only the built .rbxl gets the
+# stamp; the committed source stays "dev" and we restore it right after.
+BUILDINFO="src/shared/BuildInfo.luau"
+STAMP="$(git rev-parse --short HEAD 2>/dev/null || echo dev)-$(date -u +%Y%m%d%H%M%S)"
+if [ -f "$BUILDINFO" ]; then
+	cat > "$BUILDINFO" <<EOF
+--!strict
+-- AUTO-STAMPED by scripts/publish.sh at publish time (committed source says "dev").
+return {
+	sha = "$STAMP",
+	builtAt = "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+}
+EOF
+fi
+
 echo "==> Building place with Rojo..."
 rojo build default.project.json -o "$OUT"
+
+# Restore the committed BuildInfo so the working tree stays clean.
+if [ -f "$BUILDINFO" ]; then
+	git checkout -- "$BUILDINFO" 2>/dev/null || true
+fi
 
 echo "==> Publishing ($VERSION_TYPE) to universe $UNIVERSE_ID / place $PLACE_ID..."
 HTTP_BODY="$(mktemp)"
