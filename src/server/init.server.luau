@@ -25,6 +25,10 @@ runSystem("Garage", function()
 	require(script.Garage).start()
 end)
 
+runSystem("Reload", function()
+	require(script.Reload).start()
+end)
+
 -- Super jump! Crank up jump power so you can reach space 🚀
 local SUPER_JUMP_POWER = 300
 

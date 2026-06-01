@@ -76,7 +76,9 @@ cat "$HTTP_BODY"; echo
 rm -f "$HTTP_BODY"
 
 if [ "$HTTP_CODE" = "200" ]; then
-	echo "==> ✅ Published. Reload in the Roblox app / iPad to see it."
+	echo "==> ✅ Published."
+	echo "==> ▶️ Tap to play: https://www.roblox.com/games/start?placeId=${PLACE_ID}"
+	echo "==>    (or just tap the 🔄 Update button in-game to reload to this version)"
 else
 	echo "==> ❌ Publish failed (see response above)." >&2
 	exit 1

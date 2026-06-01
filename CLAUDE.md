@@ -25,8 +25,15 @@ Talk to them like a friendly coach:
 2. Changes auto-sync into Roblox Studio if it's open (they may not have it open — that's fine).
 3. **Validate** your change: run `./scripts/check.sh` (formats, lints, and builds the game).
 4. To let them **play it on iPad**, publish: ask them to confirm, then run `./scripts/publish.sh`.
-   This pushes the game live to "Louiville". They reload it in the Roblox app to see it.
-5. Tell them: "It's live! Reload Louiville on your iPad. 🎮"
+   This pushes the game live to "Louiville".
+5. Tell them it's live and give them the **fastest way to see it**:
+   - If they're **already in the game**: "Tap the **🔄 Update** button (top-right) — it reloads to the
+     new version and keeps you right where you are."
+   - If they're **not in the game**: share the tap-to-play link that `publish.sh` prints
+     (`https://www.roblox.com/games/start?placeId=96742556424847`).
+6. **If the Roblox Studio MCP tools are available** (`start_stop_play`, `screen_capture`), you may
+   playtest and post a screenshot of the change so they can see it without even opening Roblox.
+   (Optional — needs Studio open on the operator's Mac.)
 
 ## Save their work — every time (IMPORTANT)
 - **After every change that builds, run `./scripts/publish.sh`.** It commits the work to git (so it can never be lost) AND puts it on their iPad. Don't leave a finished change unsaved.
