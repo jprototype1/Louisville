@@ -30,7 +30,7 @@ runSystem("Reload", function()
 end)
 
 -- Super jump! Crank up jump power so you can reach space 🚀
-local SUPER_JUMP_POWER = 300
+local SUPER_JUMP_POWER = 1000
 
 local function boostJump(character: Model)
 	local humanoid = character:WaitForChild("Humanoid", 10)

@@ -131,7 +131,7 @@ end
 -- MULTI-JUMP + SOMERSAULT 🚀
 -- ═══════════════════════════════════════════════════
 
-local MAX_AIR_JUMPS = 3 -- 1 ground jump + 3 air = 4 total
+local MAX_AIR_JUMPS = 10 -- 1 ground jump + 3 air = 4 total
 local AIR_JUMP_VELOCITY = 120 -- upward boost per air jump
 local FLIP_SPIN_SPEED = math.rad(1080) -- 3 rotations/sec
 local FLIP_DURATION = 0.4

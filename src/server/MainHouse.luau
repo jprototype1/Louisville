@@ -2,6 +2,7 @@
 -- Builds the main character's home: a two-story villa with a pool,
 -- garage storage, driveway, patio, and decorative lighting.
 
+local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 
 local MainHouse = {}
@@ -1239,6 +1240,266 @@ function MainHouse.build(parent: Instance)
 		Color3.fromRGB(50, 120, 70),
 		Enum.Material.SmoothPlastic
 	)
+
+	-- ═══════════════════════════════════════════════════
+	-- ROOFTOP HELIPAD (on top of the entry tower)
+	-- ═══════════════════════════════════════════════════
+
+	local helipadFolder = Instance.new("Folder")
+	helipadFolder.Name = "Helipad"
+	helipadFolder.Parent = house
+
+	-- Tower roof top is at Y ≈ 34.1; pad sits right on it
+	block(
+		helipadFolder,
+		"HeliPad",
+		Vector3.new(20, 0.5, 20),
+		Vector3.new(18, 34.35, 17),
+		Color3.fromRGB(72, 75, 80),
+		Enum.Material.Concrete
+	)
+	-- Yellow "H" markings
+	block(
+		helipadFolder,
+		"HeliH_Horiz",
+		Vector3.new(10, 0.12, 2),
+		Vector3.new(18, 34.62, 17),
+		Color3.fromRGB(255, 215, 0),
+		Enum.Material.Neon
+	)
+	block(
+		helipadFolder,
+		"HeliH_Vert",
+		Vector3.new(2, 0.12, 10),
+		Vector3.new(18, 34.62, 17),
+		Color3.fromRGB(255, 215, 0),
+		Enum.Material.Neon
+	)
+	-- Corner warning lights
+	for _, offsets in
+		{
+			Vector3.new(8, 0, 8),
+			Vector3.new(8, 0, -8),
+			Vector3.new(-8, 0, 8),
+			Vector3.new(-8, 0, -8),
+		}
+	do
+		lightBlock(helipadFolder, "HeliLight", Vector3.new(0.6, 0.5, 0.6), Vector3.new(18, 34.65, 17) + offsets)
+	end
+
+	-- ═══════════════════════════════════════════════════
+	-- FLYABLE HELICOPTER (spawns on the helipad, crashable)
+	-- Controls: W = up + forward, S = down, A/D = turn
+	-- Crash into something fast → it explodes and respawns in 10s
+	-- ═══════════════════════════════════════════════════
+
+	-- Helipad top = 34.35 + 0.25 = 34.6; skids are -1.6 below root; root center at ≈ 36.5
+	local HELI_SPAWN_OFFSET = Vector3.new(18, 36.5, 17)
+
+	local function spawnHelicopter()
+		local heli = Instance.new("Model")
+		heli.Name = "Helicopter"
+		heli.Parent = house
+
+		local spawnPos = HOUSE_ORIGIN + HELI_SPAWN_OFFSET
+
+		-- Helper: create an anchored Part, parent to heli
+		local function hp(name: string, size: Vector3, color: Color3, mat: Enum.Material, offset: Vector3): Part
+			local p = newPart({
+				Name = name,
+				Size = size,
+				Color = color,
+				Material = mat,
+				CFrame = CFrame.new(spawnPos + offset),
+			})
+			p.Parent = heli
+			return p
+		end
+
+		-- Body
+		local root = hp(
+			"HeliRoot",
+			Vector3.new(5, 2.5, 9),
+			Color3.fromRGB(220, 55, 40),
+			Enum.Material.Metal,
+			Vector3.new(0, 0, 0)
+		)
+		root.Anchored = true -- stays parked until player sits
+		heli.PrimaryPart = root
+
+		-- Cockpit glass
+		local ckpt =
+			hp("Cockpit", Vector3.new(4.2, 2.2, 4), COLORS.glass, Enum.Material.Glass, Vector3.new(0, 0.1, -4.5))
+		ckpt.Transparency = 0.45
+
+		hp(
+			"TailBoom",
+			Vector3.new(1.2, 1.2, 8),
+			Color3.fromRGB(220, 55, 40),
+			Enum.Material.Metal,
+			Vector3.new(0, 0.5, 7.5)
+		)
+		hp("TailFin", Vector3.new(0.4, 3, 2.5), Color3.fromRGB(200, 45, 30), Enum.Material.Metal, Vector3.new(0, 2, 11))
+		hp(
+			"TailRotor",
+			Vector3.new(0.3, 4, 0.5),
+			Color3.fromRGB(30, 30, 30),
+			Enum.Material.Metal,
+			Vector3.new(0.7, 2, 11.5)
+		)
+
+		-- Skids
+		for _, xOff in { -2.2, 2.2 } do
+			hp(
+				"Skid",
+				Vector3.new(0.4, 0.35, 10),
+				Color3.fromRGB(35, 35, 35),
+				Enum.Material.Metal,
+				Vector3.new(xOff, -1.6, 0)
+			)
+			hp(
+				"SkidStrut",
+				Vector3.new(0.3, 1.2, 0.3),
+				Color3.fromRGB(35, 35, 35),
+				Enum.Material.Metal,
+				Vector3.new(xOff, -1, -2.5)
+			)
+			hp(
+				"SkidStrut",
+				Vector3.new(0.3, 1.2, 0.3),
+				Color3.fromRGB(35, 35, 35),
+				Enum.Material.Metal,
+				Vector3.new(xOff, -1, 2.5)
+			)
+		end
+
+		hp("RotorHub", Vector3.new(1, 0.6, 1), Color3.fromRGB(30, 30, 30), Enum.Material.Metal, Vector3.new(0, 1.8, 0))
+
+		-- Main rotor stays anchored — Heartbeat spins it manually
+		local rotor = hp(
+			"MainRotor",
+			Vector3.new(20, 0.18, 1.8),
+			Color3.fromRGB(25, 25, 25),
+			Enum.Material.Metal,
+			Vector3.new(0, 2.15, 0)
+		)
+		rotor.Transparency = 0.15
+		-- (stays anchored — we manually place it each frame)
+
+		-- Pilot seat
+		local seat = Instance.new("VehicleSeat")
+		seat.Name = "PilotSeat"
+		seat.Size = Vector3.new(2, 0.4, 2)
+		seat.CFrame = CFrame.new(spawnPos + Vector3.new(0, 1.4, -2))
+		seat.Color = Color3.fromRGB(25, 25, 28)
+		seat.Material = Enum.Material.Fabric
+		seat.MaxSpeed = 0
+		seat.TurnSpeed = 0
+		seat.Anchored = false
+		seat.Parent = heli
+
+		local enterPrompt = Instance.new("ProximityPrompt")
+		enterPrompt.ActionText = "Fly"
+		enterPrompt.ObjectText = "🚁 Helicopter"
+		enterPrompt.HoldDuration = 0
+		enterPrompt.MaxActivationDistance = 14
+		enterPrompt.Parent = seat
+
+		-- Weld all non-rotor parts to root (rotor is manually positioned)
+		for _, child in heli:GetChildren() do
+			if child:IsA("BasePart") and child ~= root and child ~= rotor then
+				local w = Instance.new("WeldConstraint")
+				w.Part0 = root
+				w.Part1 = child
+				w.Parent = heli
+			end
+		end
+
+		-- Physics controllers
+		local bodyVel = Instance.new("BodyVelocity")
+		bodyVel.MaxForce = Vector3.new(0, 0, 0) -- disabled until occupied
+		bodyVel.Velocity = Vector3.new(0, 0, 0)
+		bodyVel.P = 8000
+		bodyVel.Parent = root
+
+		local bodyGyro = Instance.new("BodyGyro")
+		bodyGyro.MaxTorque = Vector3.new(0, 1e7, 0)
+		bodyGyro.P = 100000
+		bodyGyro.D = 4000
+		bodyGyro.CFrame = root.CFrame
+		bodyGyro.Parent = root
+
+		local LIFT = 40 -- studs/s vertical
+		local FORWARD = 28 -- studs/s forward when going up
+		local YAW = 90 -- degrees/s turn rate
+		local rotorAngle = 0
+		local crashed = false
+
+		local conn = RunService.Heartbeat:Connect(function(dt: number)
+			if crashed then
+				return
+			end
+
+			-- Spin rotor above root, following root rotation
+			rotorAngle = (rotorAngle + dt * 600) % 360
+			rotor.CFrame = root.CFrame * CFrame.new(0, 2.15, 0) * CFrame.Angles(0, math.rad(rotorAngle), 0)
+
+			-- Flight controls
+			if seat.Occupant then
+				local look = root.CFrame.LookVector
+				local vert = seat.Throttle * LIFT
+				-- Move forward when going up, brake when going down
+				local fwd = seat.Throttle > 0 and FORWARD or 0
+				bodyVel.Velocity = Vector3.new(look.X * fwd, vert, look.Z * fwd)
+
+				local yawDelta = seat.Steer * YAW * dt
+				bodyGyro.CFrame = bodyGyro.CFrame * CFrame.Angles(0, math.rad(-yawDelta), 0)
+			end
+		end)
+
+		-- Unanchor on entry; disable flight controls on exit (let it fall/land naturally)
+		seat:GetPropertyChangedSignal("Occupant"):Connect(function()
+			if seat.Occupant then
+				root.Anchored = false
+				bodyVel.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+				bodyGyro.CFrame = root.CFrame
+			else
+				bodyVel.MaxForce = Vector3.new(0, 0, 0) -- gravity takes over
+				bodyVel.Velocity = Vector3.new(0, 0, 0)
+			end
+		end)
+
+		-- Crash: any hard impact while airborne → explosion, then respawn
+		root.Touched:Connect(function(hit: BasePart)
+			if crashed or root.Anchored then
+				return
+			end
+			if hit:IsDescendantOf(heli) then
+				return
+			end
+
+			local speed = root.AssemblyLinearVelocity.Magnitude
+			if speed > 35 then
+				crashed = true
+				conn:Disconnect()
+
+				local boom = Instance.new("Explosion")
+				boom.Position = root.Position
+				boom.BlastRadius = 14
+				boom.BlastPressure = 400000
+				boom.ExplosionType = Enum.ExplosionType.NoCraters
+				boom.Parent = workspace
+
+				task.delay(0.1, function()
+					heli:Destroy()
+				end)
+
+				task.delay(10, spawnHelicopter) -- respawn on helipad
+			end
+		end)
+	end
+
+	spawnHelicopter()
 
 	print("[MainHouse] built main character house at X=-120, Z=0")
 end
