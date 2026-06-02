@@ -19,7 +19,7 @@ local CarModels: { CarSpec } = {
 	{
 		id = "sedan",
 		name = "City Sedan",
-		color = Color3.fromRGB(40, 90, 200),
+		color = Color3.fromRGB(220, 40, 40),
 		bodySize = Vector3.new(6, 1.6, 12),
 		wheelDiameter = 3,
 		wheelWidth = 1.2,

@@ -74,20 +74,21 @@ local function buildShowroom(): Folder
 	})
 	floor.Parent = folder
 
-	-- Four corner pillars + a back wall, just enough to read as a building.
+	-- Four corner pillars + back walls, two floors tall.
 	local hx, hz = FLOOR_SIZE.X / 2, FLOOR_SIZE.Z / 2
 	for _, sx in { -1, 1 } do
 		for _, sz in { -1, 1 } do
 			local pillar = newPart("Pillar", {
-				Size = Vector3.new(2, 18, 2),
+				Size = Vector3.new(2, 36, 2),
 				Material = Enum.Material.Concrete,
 				Color = Color3.fromRGB(200, 200, 205),
-				Position = SHOWROOM_CENTER + Vector3.new(sx * (hx - 1), 9, sz * (hz - 1)),
+				Position = SHOWROOM_CENTER + Vector3.new(sx * (hx - 1), 18, sz * (hz - 1)),
 			})
 			pillar.Parent = folder
 		end
 	end
 
+	-- Ground-floor back wall.
 	local backWall = newPart("BackWall", {
 		Size = Vector3.new(FLOOR_SIZE.X, 18, 1),
 		Material = Enum.Material.Brick,
@@ -96,20 +97,39 @@ local function buildShowroom(): Folder
 	})
 	backWall.Parent = folder
 
+	-- Mid-floor (between floor 1 and floor 2).
+	local midFloor = newPart("MidFloor", {
+		Size = Vector3.new(FLOOR_SIZE.X + 2, 1, FLOOR_SIZE.Z + 2),
+		Material = Enum.Material.SmoothPlastic,
+		Color = Color3.fromRGB(235, 235, 240),
+		Position = SHOWROOM_CENTER + Vector3.new(0, 18, 0),
+	})
+	midFloor.Parent = folder
+
+	-- Second-floor back wall.
+	local backWall2 = newPart("BackWall2", {
+		Size = Vector3.new(FLOOR_SIZE.X, 18, 1),
+		Material = Enum.Material.Brick,
+		Color = Color3.fromRGB(150, 80, 60),
+		Position = SHOWROOM_CENTER + Vector3.new(0, 27, -hz),
+	})
+	backWall2.Parent = folder
+
+	-- Roof on top of the second floor.
 	local roof = newPart("Roof", {
 		Size = Vector3.new(FLOOR_SIZE.X + 2, 1, FLOOR_SIZE.Z + 2),
 		Material = Enum.Material.Metal,
 		Color = Color3.fromRGB(90, 90, 95),
-		Position = SHOWROOM_CENTER + Vector3.new(0, 18, 0),
+		Position = SHOWROOM_CENTER + Vector3.new(0, 36, 0),
 	})
 	roof.Parent = folder
 
-	-- Lit sign across the front.
+	-- Lit sign across the front (raised to top of 2nd floor).
 	local sign = newPart("Sign", {
 		Size = Vector3.new(FLOOR_SIZE.X, 5, 1),
 		Material = Enum.Material.SmoothPlastic,
 		Color = Color3.fromRGB(20, 20, 25),
-		Position = SHOWROOM_CENTER + Vector3.new(0, 20.5, hz),
+		Position = SHOWROOM_CENTER + Vector3.new(0, 38.5, hz),
 	})
 	sign.Parent = folder
 
