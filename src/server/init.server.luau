@@ -33,6 +33,10 @@ runSystem("AiPrompt", function()
 	require(script.AiPrompt).start()
 end)
 
+runSystem("PetDog", function()
+	require(script.PetDog).start()
+end)
+
 -- Super jump! Crank up jump power so you can reach space 🚀
 local SUPER_JUMP_POWER = 300
 -- Extra tall — scale height up by 50%
