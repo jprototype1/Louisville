@@ -25,14 +25,6 @@ runSystem("Garage", function()
 	require(script.Garage).start()
 end)
 
-runSystem("Reload", function()
-	require(script.Reload).start()
-end)
-
-runSystem("AiPrompt", function()
-	require(script.AiPrompt).start()
-end)
-
 runSystem("PetDog", function()
 	require(script.PetDog).start()
 end)
