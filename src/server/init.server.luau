@@ -35,12 +35,24 @@ end)
 
 -- Super jump! Crank up jump power so you can reach space 🚀
 local SUPER_JUMP_POWER = 300
+-- Extra tall — scale height up by 50%
+local BODY_HEIGHT_SCALE = 1.5
 
 local function boostJump(character: Model)
 	local humanoid = character:WaitForChild("Humanoid", 10)
 	if humanoid and humanoid:IsA("Humanoid") then
 		humanoid.UseJumpPower = true
 		humanoid.JumpPower = SUPER_JUMP_POWER
+	end
+	-- Apply height scale via BodyHeightScale value inside the Humanoid
+	local humanoidRootPart = character:WaitForChild("HumanoidRootPart", 10)
+	if humanoidRootPart then
+		local humanoid2 = character:FindFirstChildOfClass("Humanoid")
+		if humanoid2 then
+			local desc = humanoid2:GetAppliedDescription()
+			desc.HeightScale = BODY_HEIGHT_SCALE
+			humanoid2:ApplyDescription(desc)
+		end
 	end
 end
 
