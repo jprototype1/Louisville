@@ -27,7 +27,7 @@ local function makeTree(position: Vector3): Model
 	local tree = Instance.new("Model")
 	tree.Name = "Tree"
 
-	local height = rng:NextNumber(8, 16)
+	local height = rng:NextNumber(14, 26)
 	local trunk = newPart({
 		Name = "Trunk",
 		Shape = Enum.PartType.Cylinder,
