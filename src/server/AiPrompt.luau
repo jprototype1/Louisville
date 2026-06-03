@@ -104,11 +104,11 @@ local function onRequest(player: Player, prompt: any)
 
 	task.spawn(function()
 		local sessionId = AiBridge.send(prompt)
-		if not sessionId then
-			tell(player, "Couldn't reach the builder. (Is HTTP on + the token set?) 😕")
-			busyWithRequest = false
-			return
-		end
+		-- if not sessionId then
+		-- 	tell(player, "Couldn't reach the builder. (Is HTTP on + the token set?) 😕")
+		-- 	busyWithRequest = false
+		-- 	return
+		-- end
 		tell(player, "Building it now… 🛠️")
 		watchAndReload(player, sessionId)
 	end)
